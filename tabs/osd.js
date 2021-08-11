@@ -453,7 +453,7 @@ OSD.DjiElements =  {
         "LONGITUDE",
         "LATITUDE",
         "DIRECTION_TO_HOME",
-        "DISTANCE_TO_HOME" 
+        "DISTANCE_TO_HOME"
     ],
     emptyGroups: [
         "MapsAndRadars",
@@ -480,7 +480,7 @@ OSD.DjiElements =  {
         "3D_SPEED",
         "EFFICIENCY_MAH",
         "TRIP_DIST"
-    ]   
+    ]
 };
 
 OSD.constants = {
@@ -1189,6 +1189,28 @@ OSD.constants = {
                 },
             ]
         },
+        // CR1
+        {
+            name: 'osdGroupInfoReporting',
+            items: [
+                {
+                    name: 'MISSION INFO',
+                    id: 125,
+                    preview: 'M1/6>27WP'
+                },
+                {
+                    name: 'INFO CYCLE',
+                    id: 126,
+                    preview: 'INFO   CYCLE'
+                },
+                {
+                    name: 'GENERAL STATUS',
+                    id: 127,
+                    preview: 'MOVE DRONE!'
+                },
+            ]
+        },
+        // CR1
         {
             name: 'osdGroupGPS',
             enabled: function() {
@@ -2232,8 +2254,8 @@ OSD.GUI.updateFields = function() {
     }
 
     $('#djiUnsupportedElements').prepend(
-        $('<input type="checkbox" class="toggle" />') 
-        .attr('checked', OSD.data.isDjiHdFpv) 
+        $('<input type="checkbox" class="toggle" />')
+        .attr('checked', OSD.data.isDjiHdFpv)
         .on('change', function () {
             OSD.GUI.updateDjiView(this.checked);
             OSD.GUI.updatePreviews();
@@ -2263,7 +2285,7 @@ OSD.GUI.removeBottomLines = function(){
 
 OSD.GUI.updateDjiMessageElements = function(on) {
     $('.display-field').each(function(index, element) {
-        var name = $(element).find('input').attr('name'); 
+        var name = $(element).find('input').attr('name');
         if (OSD.DjiElements.craftNameElements.includes(name)) {
             if (on) {
                 $(element)
@@ -2271,7 +2293,7 @@ OSD.GUI.updateDjiMessageElements = function(on) {
                     .show();
             } else if ($('#djiUnsupportedElements').find('input').is(':checked')) {
                 $(element).hide();
-            } 
+            }
         }
 
         if (!on) {
@@ -2284,7 +2306,7 @@ OSD.GUI.updateDjiMessageElements = function(on) {
 OSD.GUI.updateDjiView = function(on) {
     if (on) {
         $(OSD.DjiElements.emptyGroups).each(function(index, groupName) {
-            $('#osdGroup' + groupName).hide();    
+            $('#osdGroup' + groupName).hide();
         });
 
         var displayFields = $('.display-field');
@@ -2297,10 +2319,10 @@ OSD.GUI.updateDjiView = function(on) {
 
         var settings = $('.settings-container').find('.settings').children();
         settings.each(function(index, element) {
-            var name = $(element).attr('class');          
+            var name = $(element).attr('class');
             if (!OSD.DjiElements.supportedSettings.includes(name)) {
                 $(element).hide();
-            }                 
+            }
         });
 
         var alarms = $('.alarms-container').find('.settings').children();
@@ -2312,7 +2334,7 @@ OSD.GUI.updateDjiView = function(on) {
         });
     } else {
         $(OSD.DjiElements.emptyGroups).each(function(index, groupName) {
-            $('#osdGroup' + groupName).show();    
+            $('#osdGroup' + groupName).show();
         });
 
         $('.display-field')
