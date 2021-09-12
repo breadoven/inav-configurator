@@ -100,11 +100,12 @@ TABS.outputs.initialize = function (callback) {
             $motorStopWarningBox = $("#motor-stop-warning"),
             $reversibleMotorBox = $("#reversible-esc-info")
 
+
         function buildMotorRates() {
             var protocolData = escProtocols[ADVANCED_CONFIG.motorPwmProtocol];
 
             $escRate.find('option').remove();
-
+// alert("Dodgy ESC protocol");
             for (var i in protocolData.rates) {
                 if (protocolData.rates.hasOwnProperty(i)) {
                     $escRate.append('<option value="' + i + '">' + protocolData.rates[i] + '</option>');
@@ -156,7 +157,6 @@ TABS.outputs.initialize = function (callback) {
         $escProtocol.val(ADVANCED_CONFIG.motorPwmProtocol);
         buildMotorRates();
         $escRate.val(ADVANCED_CONFIG.motorPwmRate);
-
         $escProtocol.change(function () {
             ADVANCED_CONFIG.motorPwmProtocol = $(this).val();
             buildMotorRates();
