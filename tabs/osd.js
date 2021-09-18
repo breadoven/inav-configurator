@@ -784,7 +784,7 @@ OSD.constants = {
                                     // Metric
                                     return FONT.symbol(SYM.TRIP_DIST) + FONT.symbol(SYM.DIST_KM) + FONT.embed_dot('1.57');
                             }
-                            
+
                         } else {
                             switch (OSD.data.preferences.units) {
                                 case 0: // Imperial
@@ -1329,17 +1329,17 @@ OSD.constants = {
             items: [
                 {
                     name: 'MISSION INFO',
-                    id: 125,
+                    id: 128,
                     preview: 'M1/6>27WP'
                 },
                 {
                     name: 'INFO CYCLE',
-                    id: 126,
+                    id: 129,
                     preview: 'INFO   CYCLE'
                 },
                 {
                     name: 'GENERAL STATUS',
-                    id: 127,
+                    id: 130,
                     preview: 'MOVE DRONE!'
                 },
             ]
