@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "minimum_chrome_version": "38",
-    "version": "3.1.0",
+    "version": "4.0.0",
     "author": "Several",
     "name": "INAV - Configurator",
     "short_name": "INAV",
@@ -21,10 +21,10 @@
     "sandbox": {
     "pages": ["tabs/map.html"]
     },
-         
+
     "permissions": [
         "https://www.google-analytics.com/",
-        "https://maps.googleapis.com/*",    
+        "https://maps.googleapis.com/*",
         "https://*.github.com/",
         "https://*.githubusercontent.com/",
         "https://*.amazonaws.com/",
