@@ -379,6 +379,7 @@ TABS.mission_control.initialize = function (callback) {
         vMaxDistSH = 0;
         settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
     }
+
     //////////////////////////////////////////////////////////////////////////////////////////////
     //      define & init Waypoints parameters
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -1363,7 +1364,7 @@ TABS.mission_control.initialize = function (callback) {
                     // if (mission.getWaypoint(tempMarker.number).getP3() == 1.0) {    // CR3
                     const elevationAtWP = await mission.getWaypoint(tempMarker.number).getElevation(globalSettings);
                     $('#elevationValueAtWP').text(elevationAtWP);
-                    checkAltElevSanity(false);
+                    checkAltElevSanity(false);  // CR3
                     // }    // CR3
                     plotElevation();
                 })()
@@ -1713,7 +1714,11 @@ TABS.mission_control.initialize = function (callback) {
         $('#pointAlt').on('change', function (event) {
             if (selectedMarker) {
                 checkAltElevSanity(true);    // CR3
-                selectedMarker.setAlt(Number($('#pointAlt').val()));
+                // selectedMarker.setAlt(Number($('#pointAlt').val()));
+                // // CR3
+                // let grdClearance = selectedMarker.getAlt() / 100 - elevationAtWP;
+                // $('#grdClearanceValueAtWP').text(` ${grdClearance}m`);
+                // // CR3
                 mission.updateWaypoint(selectedMarker);
                 mission.update();
                 redrawLayer();
@@ -1744,32 +1749,35 @@ TABS.mission_control.initialize = function (callback) {
                 // CR3
                 const P3Value = selectedMarker.getP3();
                 selectedMarker.setP3( $('#pointP3').prop("checked") ? 1.0 : 0.0);
-                (async () => {
-                    const elevationAtWP = await selectedMarker.getElevation(globalSettings);
-                    $('#elevationValueAtWP').text(elevationAtWP);
-                    var altitude = Number($('#pointAlt').val());
-                    if (P3Value != selectedMarker.getP3()) {
-                        if ($('#pointP3').prop("checked")) {
-                            if (altitude < 0) {
-                                alert("Altitude below ground level, setting to default");
-                                altitude = Number($('#MPdefaultPointAlt').val());
+                if (globalSettings.mapProviderType == 'bing') {
+                    (async () => {
+                        const elevationAtWP = await selectedMarker.getElevation(globalSettings);
+                        $('#elevationValueAtWP').text(elevationAtWP);
+                        var altitude = Number($('#pointAlt').val());
+                        if (P3Value != selectedMarker.getP3()) {
+                            if ($('#pointP3').prop("checked")) {
+                                if (altitude < 0) {
+                                    alert("Altitude below ground level, setting to default");
+                                    altitude = Number($('#MPdefaultPointAlt').val());
+                                }
+                                selectedMarker.setAlt(altitude + elevationAtWP * 100);
+                                $('#elevationAtWP').fadeIn(300);
+                            } else {
+                                selectedMarker.setAlt(altitude - Number(elevationAtWP) * 100);
+                                // $('#elevationAtWP').fadeOut(300);
                             }
-                            selectedMarker.setAlt(altitude + elevationAtWP * 100);
-                            $('#elevationAtWP').fadeIn(300);
-                        } else {
-                            selectedMarker.setAlt(altitude - Number(elevationAtWP) * 100);
-                            // $('#elevationAtWP').fadeOut(300);
                         }
-                    }
-                    $('#pointAlt').val(selectedMarker.getAlt());
-                    altitudeMeters = app.ConvertCentimetersToMeters(selectedMarker.getAlt());
-                    $('#altitudeInMeters').text(` ${altitudeMeters}m`);
-                })()
+                        $('#pointAlt').val(selectedMarker.getAlt());
+                        altitudeMeters = app.ConvertCentimetersToMeters(selectedMarker.getAlt());
+                        $('#altitudeInMeters').text(` ${altitudeMeters}m`);
+                        checkAltElevSanity(false);
+                        mission.updateWaypoint(selectedMarker);
+                        mission.update();
+                        redrawLayer();
+                        plotElevation();
+                    })()
+                }
                 // CR3
-                mission.updateWaypoint(selectedMarker);
-                mission.update();
-                redrawLayer();
-                plotElevation();
             }
         });
 
@@ -1860,7 +1868,27 @@ TABS.mission_control.initialize = function (callback) {
         $('#cancelPlot').on('click', function () {
             closeHomePanel();
         });
+        // CR3
+        $('#elevationEarthModel').on('change', function (event) {
+            if (globalSettings.mapProviderType == 'bing') {
+                (async () => {
+                    if (selectedMarker) {
+                        const elevationAtWP = await selectedMarker.getElevation(globalSettings);
+                        $('#elevationValueAtWP').text(elevationAtWP);
+                        mission.updateWaypoint(selectedMarker);
+                    }
+                    const elevationAtHome = await HOME.getElevation(globalSettings);
+                    $('#elevationValueAtHome').text(elevationAtHome+' m');
+                    HOME.setAlt(elevationAtHome);
 
+                    checkAltElevSanity(false);
+                    mission.update();
+                    redrawLayer();
+                    plotElevation();
+                })()
+            }
+        });
+        // CR3
         /////////////////////////////////////////////
         // Callback for Remove buttons
         /////////////////////////////////////////////
@@ -2211,25 +2239,57 @@ TABS.mission_control.initialize = function (callback) {
     }
 
     function changeSwitchery(element, checked) {
-      if ( ( element.is(':checked') && checked == false ) || ( !element.is(':checked') && checked == true ) ) {
-        element.parent().find('.switcherymid').trigger('click');
-      }
+        if ( ( element.is(':checked') && checked == false ) || ( !element.is(':checked') && checked == true ) ) {
+            element.parent().find('.switcherymid').trigger('click');
+        }
     }
     // CR3
     function checkAltElevSanity(reset) {
+        if (globalSettings.mapProviderType != 'bing') {
+            selectedMarker.setAlt(Number($('#pointAlt').val()));
+            $('#grdClearanceValueAtWP').text(`N/A`);
+            return;
+        }
         const elevationAtWP = Number($('#elevationValueAtWP').text())
-        if (selectedMarker.getP3() && Number($('#pointAlt').val()) < 100 * elevationAtWP) {
-            if (reset) {
-                alert("Altitude below ground level. Change ignored");
-                $('#pointAlt').val(selectedMarker.getAlt());
-            } else {
-                alert("Altitude below ground level, setting to default");
-                let altitude = Number($('#MPdefaultPointAlt').val()) + 100 * elevationAtWP;
-                $('#pointAlt').val(altitude);
-                selectedMarker.setAlt(altitude);
+        // alert(elevationAtWP);
+        if (selectedMarker.getP3()) {
+            if (Number($('#pointAlt').val()) < 100 * elevationAtWP) {
+                if (reset) {
+                    alert("Altitude below ground level. Change ignored");
+                    $('#pointAlt').val(selectedMarker.getAlt());
+                } else {
+                    alert("Altitude below ground level, setting to default");
+                    let altitude = Number($('#MPdefaultPointAlt').val()) + 100 * elevationAtWP;
+                    $('#pointAlt').val(altitude);
+                    selectedMarker.setAlt(altitude);
+                }
+                let altitudeMeters = selectedMarker.getAlt() / 100;
+                $('#altitudeInMeters').text(` ${altitudeMeters}m`);
             }
-            let altitudeMeters = selectedMarker.getAlt() / 100;
-            $('#altitudeInMeters').text(` ${altitudeMeters}m`);
+            selectedMarker.setAlt(Number($('#pointAlt').val()));
+            let grdClearance = selectedMarker.getAlt() / 100 - elevationAtWP;
+            $('#grdClearanceValueAtWP').text(` ${grdClearance}m`);
+        } else if (homeMarkers.length) {
+            let elevationAtHome = HOME.getAlt();
+            if ((Number($('#pointAlt').val()) / 100 + elevationAtHome) < elevationAtWP) {
+                if (reset) {
+                    alert("Altitude below ground level. Change ignored");
+                    $('#pointAlt').val(selectedMarker.getAlt());
+                } else {
+                    alert("Altitude below ground level, setting to default");
+                    elevationAtWP - elevationAtHome
+                    let altitude = Number($('#MPdefaultPointAlt').val()) + 100 * (elevationAtWP - elevationAtHome);
+                    $('#pointAlt').val(altitude);
+                    selectedMarker.setAlt(altitude);
+                }
+                let altitudeMeters = selectedMarker.getAlt() / 100;
+                $('#altitudeInMeters').text(` ${altitudeMeters}`);
+            }
+            selectedMarker.setAlt(Number($('#pointAlt').val()));
+            let grdClearance = Number($('#pointAlt').val()) / 100 + (elevationAtHome - elevationAtWP);
+            $('#grdClearanceValueAtWP').text(` ${grdClearance}m`);
+        } else {
+            $('#grdClearanceValueAtWP').text(`NO HOME`);
         }
     }
     // CR3

@@ -122,6 +122,12 @@
                             </table>
                         </div>
                     </div>
+                    <!-- CR3 -->
+                    <div class="point" id="elevationEarthModelclass"> <!-- style="display: none"> -->
+                        <label class="spacer_box_title i18n-replaced" for="elevationEarthModel">Use SL Earth Model: </label>
+                        <input id="elevationEarthModel" type="checkbox" value="0" class="togglemedium" required>
+                    </div>
+                    <!-- CR3 -->
                 </div>
 
                 <div id="missionPlanerSafehome" class="gui_box grey" style="display: none">
@@ -220,6 +226,12 @@
                             <label class="point-label">Elevation (m): </label>
                             <span id="elevationValueAtWP">NA</span>
                         </div>
+                        <!-- CR3 -->
+                        <div class="point" id="grdClearanceAtWP">
+                            <label class="point-label">Grd Dist (m): </label>
+                            <span id="grdClearanceValueAtWP">NA</span>
+                        </div>
+                        <!-- CR3 -->
                         <div class="point" id="pointP1class" style="display: none">
                             <label class="point-label" for="pointP1">Parameter 1: </label>
                             <input id="pointP1" type="text" value="0" required>

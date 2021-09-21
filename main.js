@@ -46,7 +46,7 @@ $(document).ready(function () {
         }
         globalSettings.proxyLayer = result.proxylayer;
     });
-    
+
     // alternative - window.navigator.appVersion.match(/Chrome\/([0-9.]*)/)[1];
     GUI.log('Running - OS: <strong>' + GUI.operating_system + '</strong>, ' +
         'Chrome: <strong>' + window.navigator.appVersion.replace(/.*Chrome\/([0-9.]*).*/, "$1") + '</strong>, ' +
@@ -123,7 +123,7 @@ $(document).ready(function () {
     var ui_tabs = $('#tabs > ul');
     $('a', ui_tabs).click(function () {
 
-        if ($(this).parent().hasClass("tab_help")) {            
+        if ($(this).parent().hasClass("tab_help")) {
             return;
         }
 
@@ -307,7 +307,7 @@ $(document).ready(function () {
                 $('#map-api-key').val(globalSettings.mapApiKey);
                 $('#proxyurl').val(globalSettings.proxyURL);
                 $('#proxylayer').val(globalSettings.proxyLayer);
-                
+
                 $('#map-provider-type').change(function () {
                     chrome.storage.local.set({
                         'map_provider_type': $(this).val()
