@@ -103,8 +103,10 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 50px" data-i18n="SafehomeSelected"></th>
-                                        <th style="width: 120px" data-i18n="SafehomeLon"></th>
+                                        <!-- CR6 -->
                                         <th style="width: 120px" data-i18n="SafehomeLat"></th>
+                                        <th style="width: 120px" data-i18n="SafehomeLon"></th>
+                                        <!-- CR6 -->
                                         <th style="width: 120px" data-i18n="SafehomeAlt"></th>
                                     </tr>
                                 </thead>
@@ -114,8 +116,10 @@
                                             <a class="ic_center" data-role="home-center" href="#"  title="move to center view"></a>
                                         </div>
                                     </td>
-                                    <td><input type="number" class="home-lon" /></td>
+                                    <!-- CR6 -->
                                     <td><input type="number" class="home-lat" /></td>
+                                    <td><input type="number" class="home-lon" /></td>
+                                    <!-- CR6 -->
                                     <td><span id="elevationValueAtHome">NA</span></td>
                                     </tr>
                                 </tbody>
@@ -123,7 +127,7 @@
                         </div>
                     </div>
                     <!-- CR3 -->
-                    <div class="point" id="elevationEarthModelclass"> <!-- style="display: none"> -->
+                    <div class="point" id="elevationEarthModelclass" style="display: none">
                         <label class="spacer_box_title i18n-replaced" for="elevationEarthModel">Use SL Earth Model: </label>
                         <input id="elevationEarthModel" type="checkbox" value="0" class="togglemedium" required>
                     </div>
@@ -147,11 +151,13 @@
                             <table class="safehomesTable">
                                 <thead>
                                     <tr>
-                                        <th style="width: 80px" data-i18n="SafehomeSelected"></th>
-                                        <th style="width: 50px" data-i18n="SafehomeId"></th>
+                                    <!-- CR6 -->
+                                        <th style="width: 30px" data-i18n="SafehomeSelected"></th>
+                                        <th style="width: 30px" data-i18n="SafehomeId"></th>
                                         <th style="width: 80px" data-i18n="SafehomeEnabled"></th>
-                                        <th style="width: 120px" data-i18n="SafehomeLon"></th>
-                                        <th style="width: 120px" data-i18n="SafehomeLat"></th>
+                                        <th style="width: 140px" data-i18n="SafehomeLat"></th>
+                                        <th style="width: 140px" data-i18n="SafehomeLon"></th>
+                                    <!-- CR6 -->
                                     </tr>
                                 </thead>
                                 <tbody id="safehomesTableBody">
@@ -220,14 +226,14 @@
                             <input id="pointP3" type="checkbox" value="0" class="togglemedium" checked required>
                         </div>
                         <!-- CR3 -->
-                        <!-- div class="point" id="elevationAtWP" style="display: none"> -->
-                        <div class="point" id="elevationAtWP">
+                        <div class="point" id="elevationAtWP" style="display: none">
+                        <!-- <div class="point" id="elevationAtWP"> -->
                         <!-- CR3 -->
                             <label class="point-label">Elevation (m): </label>
-                            <span id="elevationValueAtWP">NA</span>
+                            <span id="elevationValueAtWP">N/A</span>
                         </div>
                         <!-- CR3 -->
-                        <div class="point" id="grdClearanceAtWP">
+                        <div class="point" id="grdClearanceAtWP" style="display: none">
                             <label class="point-label">Grd Dist (m): </label>
                             <span id="grdClearanceValueAtWP">NA</span>
                         </div>

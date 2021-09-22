@@ -479,10 +479,10 @@ TABS.mission_control.initialize = function (callback) {
                     </td> \
                     <td><span class="safehome-number"/></td>\
                     <td class="safehome-enabled"><input type="checkbox" class="togglesmall safehome-enabled-value"/></td> \
-                    <td><input type="number" class="safehome-lon" /></td>\
                     <td><input type="number" class="safehome-lat" /></td>\
+                    <td><input type="number" class="safehome-lon" /></td>\
                     </tr>\
-                ');
+                ');     // CR6 Lat Lon swapped
 
                 const $row = $safehomesTableBody.find('tr:last');
 
@@ -1497,10 +1497,17 @@ TABS.mission_control.initialize = function (callback) {
 
                 var altitudeMeters = app.ConvertCentimetersToMeters(selectedMarker.getAlt());
                 // CR3
-                (async () => {
-                    const elevationAtWP = await selectedMarker.getElevation(globalSettings);
-                    $('#elevationValueAtWP').text(elevationAtWP);
-                })()
+                if (globalSettings.mapProviderType == 'bing') {
+                    $('#elevationAtWP').fadeIn();
+                    $('#grdClearanceAtWP').fadeIn();
+                    (async () => {
+                        const elevationAtWP = await selectedMarker.getElevation(globalSettings);
+                        $('#elevationValueAtWP').text(elevationAtWP);
+                    })()
+                } else {
+                    $('#elevationAtWP').fadeOut();
+                    $('#grdClearanceAtWP').fadeOut();
+                }
                 // CR3
                 $('#altitudeInMeters').text(` ${altitudeMeters}m`);
                 $('#pointLon').val(Math.round(coord[0] * 10000000) / 10000000);
@@ -1761,10 +1768,8 @@ TABS.mission_control.initialize = function (callback) {
                                     altitude = Number($('#MPdefaultPointAlt').val());
                                 }
                                 selectedMarker.setAlt(altitude + elevationAtWP * 100);
-                                $('#elevationAtWP').fadeIn(300);
                             } else {
                                 selectedMarker.setAlt(altitude - Number(elevationAtWP) * 100);
-                                // $('#elevationAtWP').fadeOut(300);
                             }
                         }
                         $('#pointAlt').val(selectedMarker.getAlt());
@@ -1859,6 +1864,11 @@ TABS.mission_control.initialize = function (callback) {
             HOME.setLon(Math.round(ol.proj.toLonLat(mapCenter)[0] * 1e7));
             HOME.setLat(Math.round(ol.proj.toLonLat(mapCenter)[1] * 1e7));
             updateHome();
+            // CR3
+            if (globalSettings.mapProviderType == 'bing') {
+                $('#elevationEarthModelclass').fadeIn(300);
+            }
+            // CR3
         });
 
         $('#cancelHome').on('click', function () {
@@ -2224,14 +2234,12 @@ TABS.mission_control.initialize = function (callback) {
     }
 
 
-
     function updateTotalInfo() {
         if (CONFIGURATOR.connectionValid) {
             $('#availablePoints').text(mission.getCountBusyPoints() + '/' + mission.getMaxWaypoints());
             $('#missionValid').html(mission.getValidMission() ? chrome.i18n.getMessage('armingCheckPass') : chrome.i18n.getMessage('armingCheckFail'));
         }
     }
-
 
     function updateFilename(filename) {
         $('#missionFilename').text(filename);
@@ -2250,8 +2258,9 @@ TABS.mission_control.initialize = function (callback) {
             $('#grdClearanceValueAtWP').text(`N/A`);
             return;
         }
-        const elevationAtWP = Number($('#elevationValueAtWP').text())
-        // alert(elevationAtWP);
+
+        const elevationAtWP = Number($('#elevationValueAtWP').text());
+        let groundClearance = "NO HOME";
         if (selectedMarker.getP3()) {
             if (Number($('#pointAlt').val()) < 100 * elevationAtWP) {
                 if (reset) {
@@ -2261,14 +2270,9 @@ TABS.mission_control.initialize = function (callback) {
                     alert("Altitude below ground level, setting to default");
                     let altitude = Number($('#MPdefaultPointAlt').val()) + 100 * elevationAtWP;
                     $('#pointAlt').val(altitude);
-                    selectedMarker.setAlt(altitude);
                 }
-                let altitudeMeters = selectedMarker.getAlt() / 100;
-                $('#altitudeInMeters').text(` ${altitudeMeters}m`);
             }
-            selectedMarker.setAlt(Number($('#pointAlt').val()));
-            let grdClearance = selectedMarker.getAlt() / 100 - elevationAtWP;
-            $('#grdClearanceValueAtWP').text(` ${grdClearance}m`);
+            groundClearance = Number($('#pointAlt').val()) / 100 - elevationAtWP;
         } else if (homeMarkers.length) {
             let elevationAtHome = HOME.getAlt();
             if ((Number($('#pointAlt').val()) / 100 + elevationAtHome) < elevationAtWP) {
@@ -2277,20 +2281,16 @@ TABS.mission_control.initialize = function (callback) {
                     $('#pointAlt').val(selectedMarker.getAlt());
                 } else {
                     alert("Altitude below ground level, setting to default");
-                    elevationAtWP - elevationAtHome
                     let altitude = Number($('#MPdefaultPointAlt').val()) + 100 * (elevationAtWP - elevationAtHome);
                     $('#pointAlt').val(altitude);
-                    selectedMarker.setAlt(altitude);
                 }
-                let altitudeMeters = selectedMarker.getAlt() / 100;
-                $('#altitudeInMeters').text(` ${altitudeMeters}`);
             }
-            selectedMarker.setAlt(Number($('#pointAlt').val()));
-            let grdClearance = Number($('#pointAlt').val()) / 100 + (elevationAtHome - elevationAtWP);
-            $('#grdClearanceValueAtWP').text(` ${grdClearance}m`);
-        } else {
-            $('#grdClearanceValueAtWP').text(`NO HOME`);
+            groundClearance = Number($('#pointAlt').val()) / 100 + (elevationAtHome - elevationAtWP);
         }
+        selectedMarker.setAlt(Number($('#pointAlt').val()));
+        let altitudeMeters = parseInt(selectedMarker.getAlt()) / 100;
+        $('#altitudeInMeters').text(` ${altitudeMeters}m`);
+        $('#grdClearanceValueAtWP').text(` ${groundClearance}`);
     }
     // CR3
 
