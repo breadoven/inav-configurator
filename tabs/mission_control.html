@@ -102,12 +102,12 @@
                             <table class="safehomesTable">
                                 <thead>
                                     <tr>
-                                        <th style="width: 50px" data-i18n="SafehomeSelected"></th>
                                         <!-- CR6 -->
-                                        <th style="width: 120px" data-i18n="SafehomeLat"></th>
-                                        <th style="width: 120px" data-i18n="SafehomeLon"></th>
+                                        <th style="width: 40px" data-i18n="SafehomeSelected"></th>
+                                        <th style="width: 140px" data-i18n="SafehomeLat"></th>
+                                        <th style="width: 140px" data-i18n="SafehomeLon"></th>
+                                        <th style="width: 100px" data-i18n="SafehomeAlt"></th>
                                         <!-- CR6 -->
-                                        <th style="width: 120px" data-i18n="SafehomeAlt"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="homeTableBody">
@@ -128,7 +128,7 @@
                     </div>
                     <!-- CR3 -->
                     <div class="point" id="elevationEarthModelclass" style="display: none">
-                        <label class="spacer_box_title i18n-replaced" for="elevationEarthModel">Use SL Earth Model: </label>
+                        <label class="spacer_box_title i18n-replaced" for="elevationEarthModel">Use Sea Level Earth DEM Model: </label>
                         <input id="elevationEarthModel" type="checkbox" value="0" class="togglemedium" required>
                     </div>
                     <!-- CR3 -->
@@ -152,9 +152,9 @@
                                 <thead>
                                     <tr>
                                     <!-- CR6 -->
-                                        <th style="width: 30px" data-i18n="SafehomeSelected"></th>
-                                        <th style="width: 30px" data-i18n="SafehomeId"></th>
-                                        <th style="width: 80px" data-i18n="SafehomeEnabled"></th>
+                                        <th style="width: 40px" data-i18n="SafehomeSelected"></th>
+                                        <th style="width: 40px" data-i18n="SafehomeId"></th>
+                                        <th style="width: 60px" data-i18n="SafehomeEnabled"></th>
                                         <th style="width: 140px" data-i18n="SafehomeLat"></th>
                                         <th style="width: 140px" data-i18n="SafehomeLon"></th>
                                     <!-- CR6 -->
@@ -225,17 +225,14 @@
                             <label class="point-label" for="pointP3">Parameter 3: </label>
                             <input id="pointP3" type="checkbox" value="0" class="togglemedium" checked required>
                         </div>
-                        <!-- CR3 -->
                         <div class="point" id="elevationAtWP" style="display: none">
-                        <!-- <div class="point" id="elevationAtWP"> -->
-                        <!-- CR3 -->
                             <label class="point-label">Elevation (m): </label>
-                            <span id="elevationValueAtWP">N/A</span>
+                            <span id="elevationValueAtWP">N/A</span>   <!-- CR3 -->
                         </div>
                         <!-- CR3 -->
-                        <div class="point" id="grdClearanceAtWP" style="display: none">
+                        <div class="point" id="groundClearanceAtWP" style="display: none">
                             <label class="point-label">Grd Dist (m): </label>
-                            <span id="grdClearanceValueAtWP">NA</span>
+                            <span id="groundClearanceValueAtWP">N/A</span>
                         </div>
                         <!-- CR3 -->
                         <div class="point" id="pointP1class" style="display: none">
