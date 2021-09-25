@@ -4001,6 +4001,12 @@
     "MissionPlannerJumpTargetRemoval": {
         "message": "You can't remove a Waypoint which is defined as a JUMP target! \nYou first need to remove the target on the waypoint triggering the JUMP."
     },
+    "MissionPlannerAltitudeChangeReset": {
+        "message": "Altitude below ground level. Change ignored"
+    },
+    "MissionPlannerAltitudeSetDefault": {
+        "message": "Altitude below ground level, setting to default"
+    },
     "SafehomeSelected": {
         "message": ""
     },
