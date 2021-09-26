@@ -1475,10 +1475,10 @@ TABS.mission_control.initialize = function (callback) {
         // Map on-click behavior definition
         //////////////////////////////////////////////////////////////////////////
         map.on('click', function (evt) {
-            var tempSelectedMarker = null;
+            var tempSelectedMarkerIndex = null; // CR3
             if (selectedMarker != null && selectedFeature != null) {
                 // alert(selectedMarker.getLayerNumber());
-                tempSelectedMarker = selectedMarker.getLayerNumber();
+                tempSelectedMarkerIndex = selectedMarker.getLayerNumber();  // CR3
                 try {
                     selectedFeature.setStyle(getWaypointIcon(selectedMarker, false));
                     selectedMarker = null;
@@ -1507,11 +1507,11 @@ TABS.mission_control.initialize = function (callback) {
 
                 var altitudeMeters = app.ConvertCentimetersToMeters(selectedMarker.getAlt());
                 // CR3
-                // alert("WP Click, old -" + tempSelectedMarker + "  new -  " +  selectedMarker.getLayerNumber());
+                // alert("WP Click, old -" + tempSelectedMarkerIndex + "  new -  " +  selectedMarker.getLayerNumber());
                 if (globalSettings.mapProviderType == 'bing') {      // CR7
                     $('#elevationAtWP').fadeIn();
                     $('#groundClearanceAtWP').fadeIn();
-                    if (tempSelectedMarker == null || tempSelectedMarker != selectedMarker.getLayerNumber()) {
+                    if (tempSelectedMarkerIndex == null || tempSelectedMarkerIndex != selectedMarker.getLayerNumber()) {
                         // alert("click async");
                         (async () => {
                             const elevationAtWP = await selectedMarker.getElevation(globalSettings);
