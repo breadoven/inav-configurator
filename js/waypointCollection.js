@@ -418,13 +418,13 @@ let WaypointCollection = function () {
         // CR7
         let sampleMaxNum;
         let sampleDist;
-        // if (globalSettings.mapProviderType == 'bing') {
+        if (globalSettings.mapProviderType == 'bing') {
             sampleMaxNum = 1024;
             sampleDist = 30;
-        // } else {
-            // sampleMaxNum = 99;
-            // sampleDist = 60;
-        // }
+        } else {
+            sampleMaxNum = 99;
+            sampleDist = 60;
+        }
         // CR7
         if (point2measure.length <= 2){
             samples = 1;
@@ -454,25 +454,25 @@ let WaypointCollection = function () {
             // CR3
         }
         else {
-            // // CR7
-            // let string = "";
-            // point2measure.forEach(function (item, index) {
-                // string += item + '|';
-            // });
-            // const response = await fetch('https://api.opentopodata.org/v1/aster30m?locations='+string+'&samples='+String(samples+1));
-            // const myJson = await response.json();
-            // var elevation = [];
-            // // alert(myJson.results.length);
-            // for (var i = 0; i < myJson.results.length; i++){
-                // // alert(i + "  " + myJson.results[i].elevation);
-                // if (myJson.results[i].elevation == null) {
-                    // elevation[i] = 0;
-                // } else {
-                    // elevation[i] = myJson.results[i].elevation;
-                // }
-            // }
-            // // CR7
-            elevation = "NA";
+            // CR7
+            let string = "";
+            point2measure.forEach(function (item, index) {
+                string += item + '|';
+            });
+            const response = await fetch('https://api.opentopodata.org/v1/aster30m?locations='+string+'&samples='+String(samples+1));
+            const myJson = await response.json();
+            var elevation = [];
+            // alert(myJson.results.length);
+            for (var i = 0; i < myJson.results.length; i++){
+                // alert(i + "  " + myJson.results[i].elevation);
+                if (myJson.results[i].elevation == null) {
+                    elevation[i] = 0;
+                } else {
+                    elevation[i] = myJson.results[i].elevation;
+                }
+            }
+            // CR7
+            // elevation = "N/A";
         }
         //console.log("elevation ", elevation);
         return [lengthMission, totalMissionDistance, samples, elevation, altPoint2measure, namePoint2measure, refPoint2measure];
