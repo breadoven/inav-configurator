@@ -670,6 +670,8 @@ TABS.mission_control.initialize = function (callback) {
         // CR3
         if (globalSettings.mapProviderType == 'bing') {      // CR7
             $('#elevationEarthModelclass').fadeIn(300);
+        } else {
+            $('#elevationEarthModelclass').fadeOut(300);
         }
         // CR3
     }
@@ -1814,7 +1816,7 @@ TABS.mission_control.initialize = function (callback) {
                         if (P3Value != selectedMarker.getP3()) {
                             if ($('#pointP3').prop("checked")) {
                                 if (altitude < 0) {
-                                    alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
+                                    // alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
                                     altitude = settings.alt;
                                 }
                                 selectedMarker.setAlt(altitude + elevationAtWP * 100);
@@ -1822,12 +1824,11 @@ TABS.mission_control.initialize = function (callback) {
                                 selectedMarker.setAlt(altitude - Number(elevationAtWP) * 100);
                             }
                         }
+                        const returnAltitude = checkAltElevSanity(false, selectedMarker.getAlt(), elevationAtWP, selectedMarker.getP3());
+                        selectedMarker.setAlt(returnAltitude);
                         $('#pointAlt').val(selectedMarker.getAlt());
                         altitudeMeters = app.ConvertCentimetersToMeters(selectedMarker.getAlt());
                         $('#altitudeInMeters').text(` ${altitudeMeters}m`);
-                        // checkAltElevSanity(false);
-                        const returnAltitude = checkAltElevSanity(false, selectedMarker.getAlt(), elevationAtWP, selectedMarker.getP3());
-                        selectedMarker.setAlt(returnAltitude);
 
                         mission.updateWaypoint(selectedMarker);
                         mission.update();
@@ -1930,6 +1931,10 @@ TABS.mission_control.initialize = function (callback) {
         $('#elevationEarthModel').on('change', function (event) {
             if (globalSettings.mapProviderType == 'bing') {  // CR7
                 (async () => {
+                    const elevationAtHome = await HOME.getElevation(globalSettings);
+                    $('#elevationValueAtHome').text(elevationAtHome+' m');
+                    HOME.setAlt(elevationAtHome);
+
                     if (selectedMarker) {
                         const elevationAtWP = await selectedMarker.getElevation(globalSettings);
                         $('#elevationValueAtWP').text(elevationAtWP);
@@ -1937,9 +1942,6 @@ TABS.mission_control.initialize = function (callback) {
                         selectedMarker.setAlt(returnAltitude);
                         mission.updateWaypoint(selectedMarker);
                     }
-                    const elevationAtHome = await HOME.getElevation(globalSettings);
-                    $('#elevationValueAtHome').text(elevationAtHome+' m');
-                    HOME.setAlt(elevationAtHome);
 
                     mission.update();
                     redrawLayer();
@@ -2301,24 +2303,23 @@ TABS.mission_control.initialize = function (callback) {
         }
     }
     // CR3
-    /* resetAltitude = true : For selected WPs only. Changes WP Altitude value back to previous value if setting below ground level.
+    /* resetAltitude = true : For selected WPs only. Changes WP Altitude value back to previous value if new setting below ground level.
      ^ resetAltitude = false : changes WP Altitude to value required to give ground clearance = default Altitude setting */
     function checkAltElevSanity(resetAltitude, checkAltitude, elevation, P3Datum) {
         // if (globalSettings.mapProviderType != 'bing') {  // CR7
-            // selectedMarker.setAlt(Number($('#pointAlt').val()));
-            // return;
+            // return checkAltitude;
         // }
 
         // const elevationAtWP = Number($('#elevationValueAtWP').text());
         let groundClearance = "NO HOME";
         let altitude = checkAltitude;
-        if (selectedMarker != null && selectedMarker.getP3()) {
+        if (P3Datum) {
             if (checkAltitude < 100 * elevation) {
                 if (resetAltitude) {
                     alert(chrome.i18n.getMessage('MissionPlannerAltitudeChangeReset'));
                     altitude = selectedMarker.getAlt();
                 } else {
-                    alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
+                    // alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
                     altitude = settings.alt + 100 * elevation;
                 }
             }
@@ -2330,7 +2331,7 @@ TABS.mission_control.initialize = function (callback) {
                     alert(chrome.i18n.getMessage('MissionPlannerAltitudeChangeReset'));
                     altitude = selectedMarker.getAlt();
                 } else {
-                    alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
+                    // alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
                     altitude = settings.alt + 100 * (elevation - elevationAtHome);
                 }
             }
@@ -2339,53 +2340,11 @@ TABS.mission_control.initialize = function (callback) {
         $('#pointAlt').val(altitude);
         let altitudeMeters = parseInt(altitude) / 100;
         $('#altitudeInMeters').text(` ${altitudeMeters}m`);
+        document.getElementById('groundClearanceAtWP').style.color = groundClearance < (settings.alt / 100) ? "#FF0000" : "#303030";
         $('#groundClearanceValueAtWP').text(` ${groundClearance}`);
 
         return altitude;
     }
-
-    // OLD VERSION ****************************
-    // /* reset = true : changes WP Altitude value back to previous value if setting below ground level.
-     // ^ reset = false : changes WP Altitude to value required to give ground clearance = default Altitude setting */
-    // function checkAltElevSanity(reset) {
-        // // if (globalSettings.mapProviderType != 'bing') {  // CR7
-            // // selectedMarker.setAlt(Number($('#pointAlt').val()));
-            // // return;
-        // // }
-
-        // const elevationAtWP = Number($('#elevationValueAtWP').text());
-        // let groundClearance = "NO HOME";
-        // if (selectedMarker != null && selectedMarker.getP3()) {
-            // if (Number($('#pointAlt').val()) < 100 * elevationAtWP) {
-                // if (reset) {
-                    // alert(chrome.i18n.getMessage('MissionPlannerAltitudeChangeReset'));
-                    // $('#pointAlt').val(selectedMarker.getAlt());
-                // } else {
-                    // alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
-                    // let altitude = settings.alt + 100 * elevationAtWP;
-                    // $('#pointAlt').val(altitude);
-                // }
-            // }
-            // groundClearance = Number($('#pointAlt').val()) / 100 - elevationAtWP;
-        // } else if (homeMarkers.length && HOME.getAlt() != "N/A") {
-            // let elevationAtHome = HOME.getAlt();
-            // if ((Number($('#pointAlt').val()) / 100 + elevationAtHome) < elevationAtWP) {
-                // if (reset) {
-                    // alert(chrome.i18n.getMessage('MissionPlannerAltitudeChangeReset'));
-                    // $('#pointAlt').val(selectedMarker.getAlt());
-                // } else {
-                    // alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
-                    // let altitude = settings.alt + 100 * (elevationAtWP - elevationAtHome);
-                    // $('#pointAlt').val(altitude);
-                // }
-            // }
-            // groundClearance = Number($('#pointAlt').val()) / 100 + (elevationAtHome - elevationAtWP);
-        // }
-        // selectedMarker.setAlt(Number($('#pointAlt').val()));
-        // let altitudeMeters = parseInt(selectedMarker.getAlt()) / 100;
-        // $('#altitudeInMeters').text(` ${altitudeMeters}m`);
-        // $('#groundClearanceValueAtWP').text(` ${groundClearance}`);
-    // }
     // CR3
 
     function plotElevation() {
