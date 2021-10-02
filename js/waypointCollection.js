@@ -435,6 +435,8 @@ let WaypointCollection = function () {
         else {
             samples = sampleMaxNum;  // CR7
         }
+
+        let elevation = "N/A";  // CR7
         if (globalSettings.mapProviderType == 'bing') {
             let elevationEarthModel = "ellipsoid";
             if ($('#elevationEarthModel').prop("checked")) {
@@ -459,22 +461,22 @@ let WaypointCollection = function () {
             });
             const response = await fetch('https://api.opentopodata.org/v1/aster30m?locations='+coordList+'&samples='+String(samples+1));
             const myJson = await response.json();
-            var elevation = [];
-            var dataError = false;
-            for (var i = 0; i < myJson.results.length; i++){
-                // alert(i + "  " + myJson.results[i].elevation);
-                if (myJson.results[i].elevation == null) {
-                    elevation[i] = 0;
-                    dataError = true;
-                } else {
-                    elevation[i] = myJson.results[i].elevation;
+            if (myJson.status == "OK") {
+                elevation = [];
+                var dataError = false;
+                for (var i = 0; i < myJson.results.length; i++){
+                    if (myJson.results[i].elevation == null) {
+                        elevation[i] = 0;
+                        dataError = true;
+                    } else {
+                        elevation[i] = myJson.results[i].elevation;
+                    }
+                }
+                if (dataError) {
+                    alert("Dodgy Topo Data!");
                 }
             }
-            if (dataError) {
-                alert("Dodgy Topo Data!");
-            }
             // CR7
-            // elevation = "N/A";
         }
         //console.log("elevation ", elevation);
         return [lengthMission, totalMissionDistance, samples, elevation, altPoint2measure, namePoint2measure, refPoint2measure];
