@@ -842,7 +842,14 @@ TABS.mission_control.initialize = function (callback) {
                     else if (typeof oldPos !== 'undefined' && activatePoi != true && activateHead == true) {
                         paintLine(oldPos, coord, element.getNumber(), color='#1497f1', lineDash=0, lineText=String(oldHeading)+"°");
                     }
-                    oldPos = coord;
+                    // CR8
+                    // oldPos = coord;
+                    if (element.getEndMission() == 165) {
+                        oldPos = 'undefined';
+                    } else {
+                        oldPos = coord;
+                    }
+                    // CR8
                 }
             }
             else if (element.isAttached()) {
@@ -863,6 +870,11 @@ TABS.mission_control.initialize = function (callback) {
                         oldHeading = String(element.getP1());
                     }
                 }
+                // CR8
+                if (element.getEndMission() == 165) {
+                    oldPos = 'undefined';
+                }
+                // CR8
             }
         });
         //reset text position
@@ -918,7 +930,6 @@ TABS.mission_control.initialize = function (callback) {
                 })
             );
         }
-
 
         if (arrow) {
             var vectorSource = new ol.source.Vector({
@@ -1472,7 +1483,6 @@ TABS.mission_control.initialize = function (callback) {
         map.on('click', function (evt) {
             var tempSelectedMarkerIndex = null;
             if (selectedMarker != null && selectedFeature != null) {
-                // alert(selectedMarker.getLayerNumber());
                 tempSelectedMarkerIndex = selectedMarker.getLayerNumber();
                 try {
                     selectedFeature.setStyle(getWaypointIcon(selectedMarker, false));
@@ -1505,7 +1515,6 @@ TABS.mission_control.initialize = function (callback) {
                     (async () => {
                         const elevationAtWP = await selectedMarker.getElevation(globalSettings);
                         $('#elevationValueAtWP').text(elevationAtWP);
-                        // checkAltElevSanity(false);
                         const returnAltitude = checkAltElevSanity(false, selectedMarker.getAlt(), elevationAtWP, selectedMarker.getP3());
                         selectedMarker.setAlt(returnAltitude);
                         plotElevation();
@@ -1523,7 +1532,8 @@ TABS.mission_control.initialize = function (callback) {
                 $('#pointP1').val(selectedMarker.getP1());
                 $('#pointP2').val(selectedMarker.getP2());
                 changeSwitchery($('#pointP3'), selectedMarker.getP3() == 1);
-
+                // alert(selectedMarker.getEndMission());  // CR8
+                // alert(mission.getCountBusyPoints());    // CR8
 
                 // Selection box update depending on choice of type of waypoint
                 for (var j in dictOfLabelParameterPoint[selectedMarker.getAction()]) {
@@ -1703,6 +1713,13 @@ TABS.mission_control.initialize = function (callback) {
         /////////////////////////////////////////////
         // Callback for Waypoint edition
         /////////////////////////////////////////////
+        // CR8
+        $('#pointLastWP').on('change', function (event) {
+            if (selectedMarker) {
+                selectedMarker.setEndMission( $('#pointLastWP').prop("checked") ? 1.0 : 0.0);
+            }
+        });
+        // CR8
         $('#pointType').change(function () {
             if (selectedMarker) {
                 selectedMarker.setAction(Number($('#pointType').val()));
@@ -1791,7 +1808,6 @@ TABS.mission_control.initialize = function (callback) {
                         if (P3Value != selectedMarker.getP3()) {
                             if ($('#pointP3').prop("checked")) {
                                 if (altitude < 0) {
-                                    // alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
                                     altitude = settings.alt;
                                 }
                                 selectedMarker.setAlt(altitude + elevationAtWP * 100);
@@ -2230,7 +2246,12 @@ TABS.mission_control.initialize = function (callback) {
         setTimeout(function(){
             mission.reinit();
             mission.copy(MISSION_PLANER);
+            alert(MISSION_PLANER.get().length);
+            // alert(MISSION_PLANER.getWaypoint(33).getEndMission());
             mission.update(true);
+            // alert(mission.get().length);
+            GUI.log('end mission = ' + mission.getWaypoint(26).getEndMission());
+            // alert(mission.getWaypoint(9).getEndMission());       // CR8
             var coord = ol.proj.fromLonLat([mission.getWaypoint(0).getLonMap(), mission.getWaypoint(0).getLatMap()]);
             map.getView().setCenter(coord);
             map.getView().setZoom(16);
@@ -2261,7 +2282,8 @@ TABS.mission_control.initialize = function (callback) {
 
     function updateTotalInfo() {
         if (CONFIGURATOR.connectionValid) {
-            $('#availablePoints').text(mission.getCountBusyPoints() + '/' + mission.getMaxWaypoints());
+            let availableWPs = mission.getMaxWaypoints() - mission.getCountBusyPoints();    // CR8
+            $('#availablePoints').text(availableWPs + '/' + mission.getMaxWaypoints());
             $('#missionValid').html(mission.getValidMission() ? chrome.i18n.getMessage('armingCheckPass') : chrome.i18n.getMessage('armingCheckFail'));
         }
     }
@@ -2284,7 +2306,6 @@ TABS.mission_control.initialize = function (callback) {
             // return checkAltitude;
         // }
 
-        // const elevationAtWP = Number($('#elevationValueAtWP').text());
         let groundClearance = "NO HOME";
         let altitude = checkAltitude;
         if (P3Datum) {
@@ -2293,7 +2314,6 @@ TABS.mission_control.initialize = function (callback) {
                     alert(chrome.i18n.getMessage('MissionPlannerAltitudeChangeReset'));
                     altitude = selectedMarker.getAlt();
                 } else {
-                    // alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
                     altitude = settings.alt + 100 * elevation;
                 }
             }
@@ -2305,7 +2325,6 @@ TABS.mission_control.initialize = function (callback) {
                     alert(chrome.i18n.getMessage('MissionPlannerAltitudeChangeReset'));
                     altitude = selectedMarker.getAlt();
                 } else {
-                    // alert(chrome.i18n.getMessage('MissionPlannerAltitudeSetDefault'));
                     altitude = settings.alt + 100 * (elevation - elevationAtHome);
                 }
             }
