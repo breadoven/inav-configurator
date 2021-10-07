@@ -661,11 +661,17 @@ TABS.mission_control.initialize = function (callback) {
             renderHomeOnMap();
         });
 
-        (async () => {
-            const elevationAtHome = await HOME.getElevation(globalSettings);
-            $('#elevationValueAtHome').text(elevationAtHome+' m');
-            HOME.setAlt(elevationAtHome);
-        })()
+        // CR10
+        if (HOME.getLatMap() == 0 && HOME.getLonMap() == 0) {
+            HOME.setAlt("N/A");
+        } else {
+            (async () => {
+                const elevationAtHome = await HOME.getElevation(globalSettings);
+                $('#elevationValueAtHome').text(elevationAtHome+' m');
+                HOME.setAlt(elevationAtHome);
+            })()
+        }
+        // CR10
 
         if (globalSettings.mapProviderType == 'bing') {      // CR7
             $('#elevationEarthModelclass').fadeIn(300);
@@ -2183,7 +2189,11 @@ TABS.mission_control.initialize = function (callback) {
                 }
 
                 redrawLayers();
-                updateHome();
+                // CR10
+                if (!(HOME.getLatMap() == 0 && HOME.getLonMap() == 0)) {
+                    updateHome();
+                }
+                // CR10
                 updateTotalInfo();
                 let sFilename = String(filename.split('\\').pop().split('/').pop());
                 GUI.log(sFilename+' has been loaded successfully !');
