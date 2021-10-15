@@ -762,7 +762,7 @@ OSD.constants = {
                 {
                     name: 'MAIN_BATT_REMAINING_PERCENTAGE',
                     id: 38,
-                    preview: '100%'
+                    preview: FONT.symbol(SYM.BATT) + '100%'
                 },
                 {
                     name: 'REMAINING_FLIGHT_TIME',
@@ -2738,11 +2738,18 @@ OSD.GUI.updatePreviews = function() {
         // consume drag/drop events.
         $img.find('img').css('pointer-events', 'none');
         if (item && item.positionable !== false) {
+            var nameKey = 'osdElement_' + item.name;
+            var nameMessage = chrome.i18n.getMessage(nameKey);
+
+            if (!nameMessage) {
+                nameMessage = inflection.titleize(item.name);
+            }
+
             $img.addClass('field-' + item.id)
                 .data('item', item)
                 .prop('draggable', true)
                 .on('dragstart', OSD.GUI.preview.onDragStart)
-                .prop('title', inflection.titleize(item.name));
+                .prop('title', nameMessage);
         }
 
         $row.append($img);

@@ -302,7 +302,7 @@
 .tab-mission-control .safehomesTable {
     width: 100%;
     text-align: center;
-    font-size: 12px;    /* CR6 */
+    font-size: 12px;
 }
 
 .tab-mission-control .safehomesTable input[type="text"] {
@@ -311,7 +311,7 @@
 }
 
 .tab-mission-control .safehomesTable input[type="number"] {
-    font-size: 10px;     /* CR6 */
+    font-size: 10px;
     width: 100%;
     -moz-appearance: textfield;
 }

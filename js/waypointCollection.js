@@ -417,33 +417,31 @@ let WaypointCollection = function () {
         let lengthMission = self.getDistance(true);
         let totalMissionDistance = lengthMission[lengthMission.length -1].toFixed(1);
         let samples;
-        // CR7
         let sampleMaxNum;
-        let sampleDist;
+        let sampleDistance;
+
         if (globalSettings.mapProviderType == 'bing') {
             sampleMaxNum = 1024;
-            sampleDist = 30;
-        } else {
+            sampleDistance = 30;
+        } else {    // use opentopodata.org instead
             sampleMaxNum = 99;
-            sampleDist = 60;
+            sampleDistance = 60;
         }
-        // CR7
+
         if (point2measure.length <= 2){
             samples = 1;
         }
-        else if (Math.trunc(totalMissionDistance / sampleDist) <= sampleMaxNum &&  point2measure.length > 2){  // CR7
-            samples = Math.trunc(totalMissionDistance / sampleDist);      // CR7
+        else if (Math.trunc(totalMissionDistance / sampleDistance) <= sampleMaxNum && point2measure.length > 2){
+            samples = Math.trunc(totalMissionDistance / sampleDistance);
         }
         else {
-            samples = sampleMaxNum;  // CR7
+            samples = sampleMaxNum;
         }
 
-        let elevation = "N/A";  // CR7
+        let elevation = "N/A";
         if (globalSettings.mapProviderType == 'bing') {
-            let elevationEarthModel = "ellipsoid";
-            if ($('#elevationEarthModel').prop("checked")) {
-                elevationEarthModel = "sealevel";
-            }
+            let elevationEarthModel = $('#elevationEarthModel').prop("checked") ? "sealevel" : "ellipsoid";
+
             if (point2measure.length >1) {
                 const response = await fetch('http://dev.virtualearth.net/REST/v1/Elevation/Polyline?points='+point2measure+'&heights='+elevationEarthModel+'&samples='+String(samples+1)+'&key='+globalSettings.mapApiKey);
                 const myJson = await response.json();
@@ -456,7 +454,6 @@ let WaypointCollection = function () {
             }
         }
         else {
-            // CR7
             let coordList = "";
             point2measure.forEach(function (item) {
                 coordList += item + '|';
@@ -478,7 +475,6 @@ let WaypointCollection = function () {
                     alert("Dodgy Topo Data!");
                 }
             }
-            // CR7
         }
         //console.log("elevation ", elevation);
         return [lengthMission, totalMissionDistance, samples, elevation, altPoint2measure, namePoint2measure, refPoint2measure];

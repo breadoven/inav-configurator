@@ -36,20 +36,30 @@ TABS.auxiliary.initialize = function (callback) {
 
     MSP.send_message(MSPCodes.MSP_BOXNAMES, false, false, get_mode_ranges);
 
+    const modeSections = {};
+        modeSections["ARM"] = "Arming";
+        modeSections["ANGLE"] = "Flight Modes";
+        modeSections["NAV COURSE HOLD"] = "Navigation Modes";
+        modeSections["NAV ALTHOLD"] = "Flight Mode Modifiers";
+        modeSections["AUTO TUNE"] = "Fixed Wing";
+        modeSections["FPV ANGLE MIX"] = "Multi-rotor";
+        modeSections["OSD OFF"] = "OSD Modes";
+        modeSections["CAMSTAB"] = "FPV Camera Modes";
+        modeSections["BEEPER"] = "Misc Modes";
+
     function sort_modes_for_display() {
         // This array defines the order that the modes are displayed in the configurator modes page
-        configuratorBoxOrder = [
-            "ARM", "PREARM",                                                                           // Arming
-            "ANGLE", "HORIZON", "MANUAL",                                                              // Flight modes
-            "NAV RTH", "NAV POSHOLD", "NAV CRUISE", "NAV COURSE HOLD",                                 // Navigation mode
-            "NAV ALTHOLD", "HEADING HOLD", "AIR MODE",                                                 // Flight mode modifiers
-            "NAV WP", "GCS NAV", "HOME RESET",                                                         // Navigation
-            "SERVO AUTOTRIM", "AUTO LEVEL", "AUTO TUNE", "NAV LAUNCH", "LOITER CHANGE", "FLAPERON",    // Fixed wing specific
-            "TURTLE", "FPV ANGLE MIX", "TURN ASSIST", "MC BRAKING", "SURFACE", "HEADFREE", "HEADADJ",  // Multi-rotor specific
-            "BEEPER", "LEDS OFF", "LIGHTS",                                                            // Feedback
-            "OSD OFF", "OSD ALT 1", "OSD ALT 2", "OSD ALT 3",                                          // OSD
-            "CAMSTAB", "CAMERA CONTROL 1", "CAMERA CONTROL 2", "CAMERA CONTROL 3",                     // FPV Camera
-            "BLACKBOX", "FAILSAFE", "KILLSWITCH", "TELEMETRY", "MSP RC OVERRIDE", "USER1", "USER2"     // Misc
+        const configuratorBoxOrder = [
+            "ARM", "PREARM",                                                                                        // Arming
+            "ANGLE", "HORIZON", "MANUAL",                                                                           // Flight modes
+            "NAV COURSE HOLD", "NAV CRUISE", "NAV POSHOLD", "NAV RTH", "NAV WP", "GCS NAV",                         // Navigation modes
+            "NAV ALTHOLD", "HEADING HOLD", "AIR MODE",                                                              // Flight mode modifiers
+            "AUTO TUNE", "SERVO AUTOTRIM", "AUTO LEVEL", "NAV LAUNCH", "LOITER CHANGE", "FLAPERON", "TURN ASSIST",  // Fixed wing specific
+            "FPV ANGLE MIX", "TURTLE", "MC BRAKING", "SURFACE", "HEADFREE", "HEADADJ",                              // Multi-rotor specific
+            "OSD OFF", "OSD ALT 1", "OSD ALT 2", "OSD ALT 3",                                                       // OSD
+            "CAMSTAB", "CAMERA CONTROL 1", "CAMERA CONTROL 2", "CAMERA CONTROL 3",                                  // FPV Camera
+            "BEEPER", "LEDS OFF", "LIGHTS", "HOME RESET", "BLACKBOX", "FAILSAFE", "KILLSWITCH", "TELEMETRY",        // Misc
+                "MSP RC OVERRIDE", "USER1", "USER2"
         ];
 
         // Sort the modes
@@ -98,6 +108,15 @@ TABS.auxiliary.initialize = function (callback) {
         }
     }
 
+    function createModeSection(sectionName) {
+        var modeSectionTemplate = $('#tab-auxiliary-templates .modeSection');
+        var newModeSection = modeSectionTemplate.clone();
+        $(newModeSection).attr('id', 'section-' + sectionName);
+        $(newModeSection).find('.modeSectionName').text(sectionName);
+
+        return newModeSection;
+    }
+
     function createMode(modeIndex, modeId) {
         var modeTemplate = $('#tab-auxiliary-templates .mode');
         var newMode = modeTemplate.clone();
@@ -111,6 +130,7 @@ TABS.auxiliary.initialize = function (callback) {
         $(newMode).data('index', modeIndex);
         $(newMode).data('id', modeId);
         $(newMode).data('origId', ORIG_AUX_CONFIG_IDS[modeIndex]);
+        $(newMode).data('modeName', AUX_CONFIG[modeIndex]);
 
         $(newMode).find('.name').data('modeElement', newMode);
         $(newMode).find('a.addRange').data('modeElement', newMode);
@@ -180,6 +200,7 @@ TABS.auxiliary.initialize = function (callback) {
 
         $(rangeElement).find('a.deleteRange').click(function () {
             var rangeElement = $(this).data('rangeElement');
+            modeElement.removeClass('inRange');
             rangeElement.remove();
         });
 
@@ -195,6 +216,11 @@ TABS.auxiliary.initialize = function (callback) {
 
         var modeTableBodyElement = $('.tab-auxiliary .modes tbody')
         for (var modeIndex = 0; modeIndex < AUX_CONFIG.length; modeIndex++) {
+
+            if (AUX_CONFIG[modeIndex] in modeSections) {
+                var newSection = createModeSection(modeSections[AUX_CONFIG[modeIndex]]);
+                modeTableBodyElement.append(newSection);
+            }
 
             var modeId = AUX_CONFIG_IDS[modeIndex];
             var newMode = createMode(modeIndex, modeId);
@@ -344,8 +370,19 @@ TABS.auxiliary.initialize = function (callback) {
 
         function update_ui() {
             let hasUsedMode = false;
+            let acroEnabled = true;
+            let acroFail = ["ANGLE", "HORIZON", "MANUAL", "NAV RTH", "NAV POSHOLD", "NAV CRUISE", "NAV COURSE HOLD", "NAV WP", "GCS NAV"];
+
+            var auxChannelCount = RC.active_channels - 4;
+
+            for (var i = 0; i < (auxChannelCount); i++) {
+                update_marker(i, RC.channels[i + 4]);
+            }
+
             for (var i = 0; i < AUX_CONFIG.length; i++) {
                 var modeElement = $('#mode-' + i);
+                let inRange = false;
+                
                 if (modeElement.find(' .range').length == 0) {
                     // if the mode is unused, skip it
                     modeElement.removeClass('off').removeClass('on');
@@ -353,11 +390,47 @@ TABS.auxiliary.initialize = function (callback) {
                 }
 
                 if (FC.isModeBitSet(modeElement.data('origId'))) {
-                    $('.mode .name').eq(modeElement.data('index')).data('modeElement').addClass('on').removeClass('off');
+                    // The flight controller can activate the mode
+                    $('.mode .name').eq(modeElement.data('index')).data('modeElement').addClass('on').removeClass('inRange').removeClass('off');
+
+                    if (jQuery.inArray(modeElement.data('modeName'), acroFail) !== -1) {
+                        acroEnabled = false;
+                    }
                 } else {
-                    $('.mode .name').eq(modeElement.data('index')).data('modeElement').removeClass('on').addClass('off');
+                    // Check to see if the mode is in range
+                    var modeRanges = modeElement.find(' .range');
+                    for (r = 0; r < modeRanges.length; r++) {
+                        var rangeLow = $(modeRanges[r]).find('.lowerLimitValue').html();
+                        var rangeHigh = $(modeRanges[r]).find('.upperLimitValue').html();
+                        var markerPosition = $(modeRanges[r]).find('.marker')[0].style.left;
+                        markerPosition = markerPosition.substring(0, markerPosition.length-1);
+
+                        rangeLow = (rangeLow - 900) / (2100-900) * 100;
+                        rangeHigh = (rangeHigh - 900) / (2100-900) * 100;
+
+                        if ((markerPosition >= rangeLow) && (markerPosition <= rangeHigh)) {
+                            inRange = true;
+                        }
+                    }
+                    
+                    if (inRange) {
+                        $('.mode .name').eq(modeElement.data('index')).data('modeElement').removeClass('on').addClass('inRange').removeClass('off');
+
+                        if (jQuery.inArray(modeElement.data('modeName'), acroFail) !== -1) {
+                            acroEnabled = false;
+                        }
+                    } else {
+                        // If not, it is shown as disabled.
+                        $('.mode .name').eq(modeElement.data('index')).data('modeElement').removeClass('on').removeClass('inRange').addClass('off');
+                    }
                 }
                 hasUsedMode = true;
+            }
+
+            if (acroEnabled) {
+                $('.acroEnabled').addClass('on').removeClass('off');
+            } else {
+                $('.acroEnabled').removeClass('on').addClass('off');
             }
         
             let hideUnused = hideUnusedModes && hasUsedMode;
@@ -366,12 +439,11 @@ TABS.auxiliary.initialize = function (callback) {
                 if (modeElement.find(' .range').length == 0) {
                     modeElement.toggle(!hideUnused);
                 }
-            }    
-            var auxChannelCount = RC.active_channels - 4;
-
-            for (var i = 0; i < (auxChannelCount); i++) {
-                update_marker(i, RC.channels[i + 4]);
             }
+            
+            $(".modeSection").each(function() {
+                $(this).toggle(!hideUnused);
+            });
         }
 
         let hideUnusedModes = false;
@@ -391,6 +463,8 @@ TABS.auxiliary.initialize = function (callback) {
         // enable data pulling
         helper.mspBalancedInterval.add('aux_data_pull', 50, 1, get_rc_data);
 
+        $(".tab-auxiliary .acroEnabled").width($("#mode-0 .info").width());
+
         GUI.content_ready(callback);
     }
 };
@@ -398,3 +472,7 @@ TABS.auxiliary.initialize = function (callback) {
 TABS.auxiliary.cleanup = function (callback) {
     if (callback) callback();
 };
+
+$(window).on('resize', function(){
+    $(".tab-auxiliary .acroEnabled").width($("#mode-0 .info").width());
+});
