@@ -2034,13 +2034,6 @@ TABS.mission_control.initialize = function (callback) {
         /////////////////////////////////////////////
         // Callback for Waypoint edition
         /////////////////////////////////////////////
-        // CR8
-        $('#pointLastWP').on('change', function (event) {
-            if (selectedMarker) {
-                selectedMarker.setEndMission( $('#pointLastWP').prop("checked") ? 1.0 : 0.0);
-            }
-        });
-        // CR8
         $('#pointType').change(function () {
             if (selectedMarker) {
                 selectedMarker.setAction(Number($('#pointType').val()));
