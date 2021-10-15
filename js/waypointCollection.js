@@ -181,12 +181,12 @@ let WaypointCollection = function () {
                     idx++;
                 }
                 // CR8
-                // if (element.getNumber() == ((bMWPfile && bReverse) ? self.get().length : self.get().length-1)) {
-                    // element.setEndMission(0xA5);
-                // }
-                // else {
-                    // element.setEndMission(0);
-                // }
+                if (element.getNumber() == ((bMWPfile && bReverse) ? self.get().length : self.get().length-1)) {
+                    element.setEndMission(0xA5);
+                }
+                else {
+                    element.setEndMission(0);
+                }
                 // CR8
             }
         });

@@ -481,10 +481,9 @@ TABS.mission_control.initialize = function (callback) {
                     <td><input type="number" class="safehome-lat" /></td>\
                     <td><input type="number" class="safehome-lon" /></td>\
                     </tr>\
-                ');     // CR6 Lat Lon swapped
+                ');
 
                 const $row = $safehomesTableBody.find('tr:last');
-
 
                 $row.find(".safehome-number").text(safehome.getNumber()+1);
 
@@ -2070,12 +2069,8 @@ TABS.mission_control.initialize = function (callback) {
             closeSettingsPanel();
         });
 
-
-
         updateTotalInfo();
     }
-
-
 
     /////////////////////////////////////////////
     //
