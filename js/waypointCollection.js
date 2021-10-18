@@ -181,7 +181,6 @@ let WaypointCollection = function () {
                     idx++;
                 }
                 // CR8
-                // alert(element.getNumber() + " before flag " + element.getEndMission())
                 if (!(bMWPfile && bReverse)) {
                     if (element.getNumber() == self.get().length - 1) {
                         element.setEndMission(0xA5);
@@ -190,13 +189,6 @@ let WaypointCollection = function () {
                         element.setEndMission(0);
                     }
                 }
-                // alert(element.getNumber() + " flag after " + element.getEndMission())
-                // if (element.getNumber() == ((bMWPfile && bReverse) ? self.get().length : self.get().length-1)) {
-                    // element.setEndMission(0xA5);
-                // }
-                // else {
-                    // element.setEndMission(0);
-                // }
                 // CR8
             }
         });
