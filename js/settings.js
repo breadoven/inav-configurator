@@ -60,7 +60,7 @@ var Settings = (function () {
                     } else {
                         input.attr('step', "0.01");
                     }
-                    
+
                     input.attr('min', s.setting.min);
                     input.attr('max', s.setting.max);
                     input.val(s.value.toFixed(2));

@@ -770,6 +770,7 @@ TABS.mission_control.initialize = function (callback) {
             $('#multimissionOptionList').append($('<option>', {value: i, text: i}));
         }
         updateMultimissionState();
+        $('#activeNissionIndex').text(1);   // CR8
     }
 
     function updateMultimissionState() {
@@ -789,6 +790,7 @@ TABS.mission_control.initialize = function (callback) {
                 } else {
                     totalmultimissionWPs = multimission.get().length + mission.get().length;
                     $("#updateMultimissionButton").removeClass('disabled');
+                    $("#setActiveMissionButton").removeClass('disabled');  // CR8
                 }
                 $('#multimissionInfo').text(multimissionCount + ' missions (' + totalmultimissionWPs + '/' + mission.getMaxWaypoints() + ' WPs)');
                 document.getElementById('multimissionInfo').style.color = totalmultimissionWPs > mission.getMaxWaypoints() ? "#FF0000" : "#303030";
@@ -799,6 +801,7 @@ TABS.mission_control.initialize = function (callback) {
             }
         } else {
             $("#addMultimissionButton").addClass('disabled');
+            $("#setActiveMissionButton").addClass('disabled');  // CR8
         }
     }
 
@@ -884,7 +887,7 @@ TABS.mission_control.initialize = function (callback) {
         updateTotalInfo();
     }
 
-    /* single mission selection by double clicking mission WP on map */
+    /* single mission selection using WP edit box Edit button */
     function mapSelectEditMultimission(WPNumber) {
         let MMCount = 1;
 
@@ -2275,6 +2278,7 @@ TABS.mission_control.initialize = function (callback) {
                 updateAllMultimission();
 
                 $("#updateMultimissionButton").addClass('disabled');
+                $("#setActiveMissionButton").addClass('disabled');  // CR8
                 setMultimissionEditControl(multimissionCount ? true : false);
                 updateMultimissionState();
                 return;
@@ -2287,6 +2291,7 @@ TABS.mission_control.initialize = function (callback) {
                 if (missions == 1) updateAllMultimission();
 
                 $("#updateMultimissionButton").removeClass('disabled');
+                $("#setActiveMissionButton").removeClass('disabled');   // CR8
                 setMultimissionEditControl(false);
             }
 
@@ -2304,7 +2309,11 @@ TABS.mission_control.initialize = function (callback) {
         $('#cancelMultimission').on('click', function () {
             $('#missionPlannerMultiMission').fadeOut(300);
         });
-
+        // CR8
+        $('#setActiveMissionButton').on('click', function () {
+            $('#activeNissionIndex').text(Number($('#multimissionOptionList').val()));
+        });
+        // CR8
         /////////////////////////////////////////////
         // Callback for Remove buttons
         /////////////////////////////////////////////
@@ -2685,7 +2694,7 @@ TABS.mission_control.initialize = function (callback) {
             if (saveEeprom) {
                 $('#saveEepromMissionButton').removeClass('disabled');
                 GUI.log(chrome.i18n.getMessage('eeprom_saved_ok'));
-                MSP.send_message(MSPCodes.MSP_WP_MISSION_SAVE, [0], false);
+                MSP.send_message(MSPCodes.MSP_WP_MISSION_SAVE, [0], false, setMissionIndex);    // CR8
             } else {
                 $('#saveMissionButton').removeClass('disabled');
             }
@@ -2699,6 +2708,16 @@ TABS.mission_control.initialize = function (callback) {
             refreshLayers();
             $('#MPeditPoint').fadeOut(300);
         });
+        // CR8
+        function setMissionIndex() {
+            let activeIndex =  $('#activeNissionIndex').text();
+            mspHelper.setSetting("nav_wp_multi_mission_index", activeIndex, function () {
+                MSP.send_message(MSPCodes.MSP_EEPROM_WRITE, false, false, function () {
+                    GUI.log(chrome.i18n.getMessage('multimission_active_index_saved_eeprom'));
+                });
+            });
+        }
+        // CR8
     }
 
     function updateTotalInfo() {
