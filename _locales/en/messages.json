@@ -3492,7 +3492,7 @@
         "message": "Safe Home manager"
     },
     "missionMultiMissionHead": {
-        "message": "Multi Mission manager"
+        "message": "Multi Missions"
     },
     "missionTemplateHead": {
         "message": "Mission template"
@@ -3519,7 +3519,7 @@
         "message": "This will over write current multi mission.\nContinue?"
     },
     "multimission_active_index_saved_eeprom": {
-        "message": "Mission active index saved EEPROM"
+        "message": "Mission active index saved"
     },
     "no_waypoints_to_load": {
         "message": "No waypoints to load !"
