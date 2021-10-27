@@ -668,7 +668,7 @@ TABS.mission_control.initialize = function (callback) {
             renderHomeOnMap();
         });
 
-        if (HOME.getLatMap() == 0 && HOME.getLonMap() == 0) {
+        if (!HOME.getLatMap() && !HOME.getLonMap()) {
             HOME.setAlt("N/A");
         } else {
             (async () => {
@@ -811,10 +811,10 @@ TABS.mission_control.initialize = function (callback) {
 
     // /* checks if single mission loaded on map */
     function singleMissionActive() {
-        return !multimissionCount || !(Number($('#multimissionOptionList').val()) == 0);
+        return !multimissionCount || Number($('#multimissionOptionList').val());
     }
 
-    function updateAllMultimission(missionDelete = false) {
+    function updateAllMultimission(missionDelete = false, newMission = false) {
         // flag if new MM mission empty on update
         let missionIsEmptyOnUpdate = mission.isEmpty() ? true : false;
 
@@ -835,6 +835,9 @@ TABS.mission_control.initialize = function (callback) {
         });
         multimission.update(false);
         // multimission.missionDisplayDebug();
+
+        // if new mission added no need to redraw so return
+        if (newMission) return;
 
         mission.reinit();
         mission.copy(multimission);
@@ -918,8 +921,8 @@ TABS.mission_control.initialize = function (callback) {
     }
 
     function addMultimission() {
-        if (Number($('#multimissionOptionList').val()) || !multimissionCount) {
-            updateAllMultimission();
+        if (singleMissionActive() || !multimissionCount) {
+            updateAllMultimission(false, true);
         }
         multimissionCount += !multimissionCount ? 2 : 1;
         renderMultimissionTable();
@@ -1059,11 +1062,6 @@ TABS.mission_control.initialize = function (callback) {
         $('#missionDistance').text(0);
         cleanLines();
         mission.get().forEach(function (element) {
-            // CR8
-            // if (element.getEndMission() == 0xA5) {
-                // multiMissionWPNum = element.getNumber() + 1;
-            // }
-            // CR8
             if (!element.isAttached()) {
                 let coord = ol.proj.fromLonLat([element.getLonMap(), element.getLatMap()]);
                 if (element.getAction() == 5) {
@@ -2459,7 +2457,7 @@ TABS.mission_control.initialize = function (callback) {
 
                 // parse mission file
                 removeAllWaypoints();
-                missionEndFlagCount = 0;
+                let missionEndFlagCount = 0;
                 var node = null;
                 var nodemission = null;
                 for (var noderoot in result) {
@@ -2574,7 +2572,7 @@ TABS.mission_control.initialize = function (callback) {
                 }
 
                 redrawLayers();
-                if (!(HOME.getLatMap() == 0 && HOME.getLonMap() == 0)) {
+                if (HOME.getLatMap() && HOME.getLonMap()) {
                     updateHome();
                 }
                 updateTotalInfo();
