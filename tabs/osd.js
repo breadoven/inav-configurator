@@ -904,7 +904,7 @@ OSD.constants = {
                     preview: function(){
                         let rpmPreview = '112974'.substr((6 - parseInt(Settings.getInputValue('osd_esc_rpm_precision'))));
                         return FONT.symbol(SYM.RPM) + rpmPreview;
-                    } 
+                    }
                 },
                 {
                     name: 'GLIDESLOPE',
@@ -914,7 +914,7 @@ OSD.constants = {
                 },
                 {
                     name: 'MISSION INFO',
-                    id: 128,
+                    id: 129,
                     preview: 'M1/6>27WP'
                 },
                 {
@@ -1337,18 +1337,13 @@ OSD.constants = {
             name: 'osdGroupInfoReporting',
             items: [
                 {
-                    name: 'MISSION INFO',
-                    id: 128,
-                    preview: 'M1/6>27WP'
-                },
-                {
                     name: 'INFO CYCLE',
-                    id: 129,
+                    id: 130,
                     preview: 'INFO   CYCLE'
                 },
                 {
                     name: 'GENERAL STATUS',
-                    id: 130,
+                    id: 131,
                     preview: 'MOVE DRONE!'
                 },
             ]
