@@ -2653,10 +2653,14 @@ TABS.mission_control.initialize = function (callback) {
                     alert(chrome.i18n.getMessage('no_waypoints_to_load'));
                     return;
                 }
+alert(MISSION_PLANER.get().length);
+MISSION_PLANER.missionDisplayDebug();
+alert(MISSION_PLANER.getCountBusyPoints());
                 mission.reinit();
                 mission.copy(MISSION_PLANER);
                 mission.update(false, true);
-
+mission.missionDisplayDebug();
+alert(mission.getCountBusyPoints());
                 multimissionCount = 0;
                 let missionEndFlagCount = 0;
                 mission.get().forEach(function (element) {

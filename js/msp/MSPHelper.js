@@ -2989,35 +2989,42 @@ var mspHelper = (function (gui) {
 
     self.loadWaypoints = function (callback) {
         MISSION_PLANER.reinit();
-        let waypointId = 1;
+        let waypointId = 0;
         let startTime = new Date().getTime();
-        MSP.send_message(MSPCodes.MSP_WP_GETINFO, false, false, getFirstWP);
+        MSP.send_message(MSPCodes.MSP_WP_GETINFO, false, false, loadWP);
 
-        function getFirstWP() {
-            MSP.send_message(MSPCodes.MSP_WP, [waypointId], false, nextWaypoint)
-        };
-
-        function nextWaypoint() {
+        function loadWP() {
             waypointId++;
             if (waypointId < MISSION_PLANER.getCountBusyPoints()) {
-                MSP.send_message(MSPCodes.MSP_WP, [waypointId], false, nextWaypoint);
-            }
-            else {
+                MSP.send_message(MSPCodes.MSP_WP, [waypointId], false, loadWP);
+            } else {
                 GUI.log('Receive time: ' + (new Date().getTime() - startTime) + 'ms');
                 MSP.send_message(MSPCodes.MSP_WP, [waypointId], false, callback);
             }
         };
+
+        // function nextWaypoint() {
+            // waypointId++;
+            // if (waypointId < MISSION_PLANER.getCountBusyPoints()) {
+                // MSP.send_message(MSPCodes.MSP_WP, [waypointId], false, nextWaypoint);
+            // }
+            // else {
+                // GUI.log('Receive time: ' + (new Date().getTime() - startTime) + 'ms');
+                // MSP.send_message(MSPCodes.MSP_WP, [waypointId], false, callback);
+            // }
+        // };
     };
 
     self.saveWaypoints = function (callback) {
-        let waypointId = 1;
+        let waypointId = 0;
         let startTime = new Date().getTime();
-        MSP.send_message(MSPCodes.MSP_SET_WP, MISSION_PLANER.extractBuffer(waypointId), false, nextWaypoint)
+        sendWaypoint();
+        // MSP.send_message(MSPCodes.MSP_SET_WP, MISSION_PLANER.extractBuffer(waypointId), false, nextWaypoint)
 
-        function nextWaypoint() {
+        function sendWaypoint() {
             waypointId++;
             if (waypointId < MISSION_PLANER.get().length) {
-                MSP.send_message(MSPCodes.MSP_SET_WP, MISSION_PLANER.extractBuffer(waypointId), false, nextWaypoint);
+                MSP.send_message(MSPCodes.MSP_SET_WP, MISSION_PLANER.extractBuffer(waypointId), false, sendWaypoint);
             }
             else {
                 MSP.send_message(MSPCodes.MSP_SET_WP, MISSION_PLANER.extractBuffer(waypointId), false, endMission);
