@@ -2653,29 +2653,25 @@ TABS.mission_control.initialize = function (callback) {
                     alert(chrome.i18n.getMessage('no_waypoints_to_load'));
                     return;
                 }
-alert(MISSION_PLANER.get().length);
-MISSION_PLANER.missionDisplayDebug();
-alert(MISSION_PLANER.getCountBusyPoints());
+
                 mission.reinit();
                 mission.copy(MISSION_PLANER);
                 mission.update(false, true);
-mission.missionDisplayDebug();
-alert(mission.getCountBusyPoints());
+
+                /* check multimissions */
                 multimissionCount = 0;
-                let missionEndFlagCount = 0;
                 mission.get().forEach(function (element) {
                     if (element.getEndMission() == 0xA5) {
-                        missionEndFlagCount ++;
+                        multimissionCount ++;
                     }
                 });
-                if (missionEndFlagCount > 1) {
-                    multimissionCount = missionEndFlagCount;
-                    multimission.reinit();
+                multimissionCount = multimissionCount > 1 ? multimissionCount : 0;
+                multimission.reinit();
+                if (multimissionCount > 1) {
                     multimission.copy(mission);
-                    renderMultimissionTable();
                     $('#missionPlannerMultiMission').fadeIn(300);
                 }
-                updateMultimissionState();
+                renderMultimissionTable();
 
                 setView(16);
                 redrawLayers();
