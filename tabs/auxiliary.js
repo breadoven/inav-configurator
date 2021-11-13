@@ -58,8 +58,8 @@ TABS.auxiliary.initialize = function (callback) {
             "FPV ANGLE MIX", "TURTLE", "MC BRAKING", "SURFACE", "HEADFREE", "HEADADJ",                              // Multi-rotor specific
             "OSD OFF", "OSD ALT 1", "OSD ALT 2", "OSD ALT 3",                                                       // OSD
             "CAMSTAB", "CAMERA CONTROL 1", "CAMERA CONTROL 2", "CAMERA CONTROL 3",                                  // FPV Camera
-            "BEEPER", "LEDS OFF", "LIGHTS", "HOME RESET", "BLACKBOX", "FAILSAFE", "KILLSWITCH", "TELEMETRY",        // Misc
-                "MSP RC OVERRIDE", "USER1", "USER2"
+            "BEEPER", "LEDS OFF", "LIGHTS", "HOME RESET", "WP PLANNER", "BLACKBOX", "FAILSAFE", "KILLSWITCH",       // Misc
+                "TELEMETRY", "MSP RC OVERRIDE", "USER1", "USER2"
         ];
 
         // Sort the modes
