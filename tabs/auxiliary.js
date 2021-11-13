@@ -53,7 +53,7 @@ TABS.auxiliary.initialize = function (callback) {
             "ARM", "PREARM",                                                                                        // Arming
             "ANGLE", "HORIZON", "MANUAL",                                                                           // Flight modes
             "NAV COURSE HOLD", "NAV CRUISE", "NAV POSHOLD", "NAV RTH", "NAV WP", "GCS NAV",                         // Navigation modes
-            "NAV ALTHOLD", "HEADING HOLD", "AIR MODE",                                                              // Flight mode modifiers
+            "NAV ALTHOLD", "HEADING HOLD", "AIR MODE", "SOARING",                                                   // Flight mode modifiers
             "AUTO TUNE", "SERVO AUTOTRIM", "AUTO LEVEL", "NAV LAUNCH", "LOITER CHANGE", "FLAPERON", "TURN ASSIST",  // Fixed wing specific
             "FPV ANGLE MIX", "TURTLE", "MC BRAKING", "SURFACE", "HEADFREE", "HEADADJ",                              // Multi-rotor specific
             "OSD OFF", "OSD ALT 1", "OSD ALT 2", "OSD ALT 3",                                                       // OSD
@@ -70,7 +70,7 @@ TABS.auxiliary.initialize = function (callback) {
 
         for (i=0; i<AUX_CONFIG.length; i++) {
             tmpAUX_CONFIG[i] = AUX_CONFIG[i];
-            tmpAUX_CONFIG_IDS[i] = AUX_CONFIG_IDS[i];   
+            tmpAUX_CONFIG_IDS[i] = AUX_CONFIG_IDS[i];
         }
 
         AUX_CONFIG = [];
@@ -123,7 +123,7 @@ TABS.auxiliary.initialize = function (callback) {
         var modeName = AUX_CONFIG[modeIndex];
         // if user choose the runcam split at peripheral column, then adjust the boxname(BOXCAMERA1, BOXCAMERA2, BOXCAMERA3)
         modeName = adjustBoxNameIfPeripheralWithModeID(modeId, modeName);
- 
+
         $(newMode).attr('id', 'mode-' + modeIndex);
         $(newMode).find('.name').text(modeName);
 
@@ -382,7 +382,7 @@ TABS.auxiliary.initialize = function (callback) {
             for (var i = 0; i < AUX_CONFIG.length; i++) {
                 var modeElement = $('#mode-' + i);
                 let inRange = false;
-                
+
                 if (modeElement.find(' .range').length == 0) {
                     // if the mode is unused, skip it
                     modeElement.removeClass('off').removeClass('on');
@@ -412,7 +412,7 @@ TABS.auxiliary.initialize = function (callback) {
                             inRange = true;
                         }
                     }
-                    
+
                     if (inRange) {
                         $('.mode .name').eq(modeElement.data('index')).data('modeElement').removeClass('on').addClass('inRange').removeClass('off');
 
@@ -432,7 +432,7 @@ TABS.auxiliary.initialize = function (callback) {
             } else {
                 $('.acroEnabled').removeClass('on').addClass('off');
             }
-        
+
             let hideUnused = hideUnusedModes && hasUsedMode;
             for (let i = 0; i < AUX_CONFIG.length; i++) {
                 let modeElement = $('#mode-' + i);
@@ -440,7 +440,7 @@ TABS.auxiliary.initialize = function (callback) {
                     modeElement.toggle(!hideUnused);
                 }
             }
-            
+
             $(".modeSection").each(function() {
                 $(this).toggle(!hideUnused);
             });
@@ -456,7 +456,7 @@ TABS.auxiliary.initialize = function (callback) {
                 })
                 .prop("checked", !!result.hideUnusedModes)
                 .change();
-        });  
+        });
         // update ui instantly on first load
         update_ui();
 
