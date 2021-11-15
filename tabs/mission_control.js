@@ -2850,9 +2850,9 @@ TABS.mission_control.initialize = function (callback) {
                     };
 
                     // CR13
-                    let missionNumber = "";
-                    if (multimissionCount) {
-                        missionNumber = " " + ($('#multimissionOptionList').val());
+                    let missionNumber = '';
+                    if (multimissionCount) {    // plot disabled when all missions displayed so only for single missions
+                        missionNumber = ' ' + ($('#multimissionOptionList').val());
                     }
                     // CR13
                     var layout = {showlegend: true,
