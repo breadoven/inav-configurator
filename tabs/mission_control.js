@@ -787,7 +787,7 @@ TABS.mission_control.initialize = function (callback) {
                     totalmultimissionWPs = multimission.get().length + mission.get().length;
                     $("#updateMultimissionButton").removeClass('disabled');
                     $("#setActiveMissionButton").removeClass('disabled');
-                    // $('#missionPlanerElevation').show();    // CR13
+                    $('#missionPlanerElevation').show();    // CR13
                 } else {
                     $('#missionDistance').text('N/A');
                     totalmultimissionWPs = mission.get().length;
@@ -795,7 +795,7 @@ TABS.mission_control.initialize = function (callback) {
                     $("#updateMultimissionButton").addClass('disabled');
                     $("#setActiveMissionButton").addClass('disabled');
                     setMultimissionEditControl(true);
-                    // $('#missionPlanerElevation').hide();    // CR13
+                    $('#missionPlanerElevation').hide();    // CR13
                 }
                 $('#multimissionInfo').text(multimissionCount + ' missions (' + totalmultimissionWPs + '/' + mission.getMaxWaypoints() + ' WPs)');
                 document.getElementById('multimissionInfo').style.color = totalmultimissionWPs > mission.getMaxWaypoints() ? "#FF0000" : "#303030";
