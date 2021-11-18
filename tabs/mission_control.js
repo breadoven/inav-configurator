@@ -1804,6 +1804,7 @@ TABS.mission_control.initialize = function (callback) {
                     selectedMarker = null;
                     selectedFeature = null;
                     tempMarker = null;
+                    // clearEditForm();    // CR15 ?
                 } catch (e) {
                     console.log(e);
                     GUI.log("Previous selection was not a WAYPOINT!");
@@ -1918,7 +1919,7 @@ TABS.mission_control.initialize = function (callback) {
                 }
             }
             //mission.missionDisplayDebug();
-            if (selectedFeature && tempMarker.kind != "waypoint") clearEditForm();
+            // if (selectedFeature && tempMarker.kind != "waypoint") clearEditForm();  // CR15
             updateMultimissionState();
         });
 
@@ -2589,11 +2590,10 @@ TABS.mission_control.initialize = function (callback) {
 
         var center = ol.proj.toLonLat(map.getView().getCenter());
         var zoom = map.getView().getZoom();
-
         let version = (multimissionCount && !singleMissionActive()) ? '4.0.0' : '2.3-pre8';    // CR14
         var data = {
             'version': { $: { 'value': version } },
-            'meta': { $: { 'cx': (Math.round(center[0] * 10000000) / 10000000),     // CR14
+            'mwp': { $: { 'cx': (Math.round(center[0] * 10000000) / 10000000),     // CR14
                           'cy': (Math.round(center[1] * 10000000) / 10000000),
                           'home-x' : HOME.getLonMap(),
                           'home-y' : HOME.getLatMap(),
