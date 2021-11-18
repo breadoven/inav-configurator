@@ -893,8 +893,6 @@ TABS.mission_control.initialize = function (callback) {
             i++;
         });
         mission.setMaxWaypoints(multimission.getMaxWaypoints());    // CR13
-        // mission.setCountBusyPoints(multimission.getCountBusyPoints());
-        // mission.setValidMission(multimission.getValidMission());
 
         multimission.get().splice(startWPCount, (endWPCount - startWPCount + 1))    // cut current active map mission from MM
 
@@ -2482,7 +2480,7 @@ TABS.mission_control.initialize = function (callback) {
                                             mission.setVersion(node.$[attr]);
                                         }
                                     }
-                                } else if (node['#name'].match(/mwp/i) && node.$) {
+                                } else if (node['#name'].match(/mwp/i) || node['#name'].match(/meta/i) && node.$) {     // CR14
                                     for (var attr in node.$) {
                                         if (attr.match(/zoom/i)) {
                                             mission.setCenterZoom(parseInt(node.$[attr]));
@@ -2554,6 +2552,14 @@ TABS.mission_control.initialize = function (callback) {
                         return;
                     } else {
                         // update Attached Waypoints (i.e non Map Markers)
+                        // CR14
+                        // renumber WPs sequentially across all missions
+                        i = 1;
+                        mission.get().forEach(function (element) {
+                            element.setNumber(i);
+                            i++;
+                        });
+                        // CR14
                         mission.update(false, true);
                         multimissionCount = missionEndFlagCount;
                         multimission.reinit();
@@ -2600,9 +2606,10 @@ TABS.mission_control.initialize = function (callback) {
         var center = ol.proj.toLonLat(map.getView().getCenter());
         var zoom = map.getView().getZoom();
 
+        let version = (multimissionCount && !singleMissionActive()) ? '4.0.0' : '2.3-pre8';    // CR14
         var data = {
-            'version': { $: { 'value': '2.3-pre8' } },
-            'mwp': { $: { 'cx': (Math.round(center[0] * 10000000) / 10000000),
+            'version': { $: { 'value': version } },
+            'meta': { $: { 'cx': (Math.round(center[0] * 10000000) / 10000000),     // CR14
                           'cy': (Math.round(center[1] * 10000000) / 10000000),
                           'home-x' : HOME.getLonMap(),
                           'home-y' : HOME.getLatMap(),
@@ -2610,22 +2617,28 @@ TABS.mission_control.initialize = function (callback) {
             'missionitem': []
         };
 
+        let missionStartWPNumber = 0;  // CR14
         mission.get().forEach(function (waypoint) {
-            var point = { $: {
-                        'no': waypoint.getNumber()+1,
+            var point = {$:{
+                        'no': waypoint.getNumber() - missionStartWPNumber + 1,  // CR14
                         'action': MWNP.WPTYPE.REV[waypoint.getAction()],
                         'lat': waypoint.getLatMap(),
                         'lon': waypoint.getLonMap(),
                         'alt': (waypoint.getAlt() / 100),
-                        'parameter1': (MWNP.WPTYPE.REV[waypoint.getAction()] == "JUMP" ? waypoint.getP1()+1 : waypoint.getP1()),
+                        'parameter1': (MWNP.WPTYPE.REV[waypoint.getAction()] == "JUMP" ? waypoint.getP1() + 1 : waypoint.getP1()),
                         'parameter2': waypoint.getP2(),
                         'parameter3': waypoint.getP3(),
                         'flag': waypoint.getEndMission(),
-                    } };
+                    }};
+            // CR14
+            if (waypoint.getEndMission() == 0xA5) {
+                missionStartWPNumber = waypoint.getNumber() + 1;
+            }
+            // CR14
             data.missionitem.push(point);
         });
-
-        var builder = new window.xml2js.Builder({ 'rootName': 'mission', 'renderOpts': { 'pretty': true, 'indent': '\t', 'newline': '\n' } });
+        // var builder = new window.xml2js.Builder({ 'rootName': 'mission', 'renderOpts': { 'pretty': true, 'indent': '\t', 'newline': '\n', 'allowEmpty': true} });
+        var builder = new window.xml2js.Builder({ 'rootName': 'mission', 'renderOpts': { 'pretty': true, 'indent': '\t', 'newline': '\n'}});
         var xml = builder.buildObject(data);
         fs.writeFile(filename, xml, (err) => {
             if (err) {
