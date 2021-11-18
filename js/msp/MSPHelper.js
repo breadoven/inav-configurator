@@ -3208,9 +3208,9 @@ var mspHelper = (function (gui) {
         });
     };
 
-    self.setSetting = function (name, value, callback) {    // CR8
+    self.setSetting = function (name, value, callback) {
         this.encodeSetting(name, value).then(function (data) {
-            return MSP.promise(MSPCodes.MSPV2_SET_SETTING, data).then(callback);    // CR8
+            return MSP.promise(MSPCodes.MSPV2_SET_SETTING, data).then(callback);
         });
     };
 

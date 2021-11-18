@@ -5,7 +5,7 @@ let WaypointCollection = function () {
 
     let self = {},
         data = [],
-        maxWaypoints = 120, // CR13
+        maxWaypoints = 120,
         isValidMission = 0,
         countBusyPoints = 0,
         version = 0,
@@ -81,7 +81,7 @@ let WaypointCollection = function () {
 
     self.reinit = function () {
         data = [];
-        maxWaypoints = 120;     // CR13
+        maxWaypoints = 120;
         isValidMission = 0;
         countBusyPoints = 0;
         version = 0;
@@ -415,7 +415,6 @@ let WaypointCollection = function () {
 
     self.getElevation = async function(globalSettings) {
         const [nLoop, point2measure, altPoint2measure, namePoint2measure, refPoint2measure] = self.getPoint2Measure(true);
-        // alert(point2measure);
         let lengthMission = self.getDistance(true);
         let totalMissionDistance = lengthMission[lengthMission.length -1].toFixed(1);
         let samples;

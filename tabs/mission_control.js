@@ -770,7 +770,7 @@ TABS.mission_control.initialize = function (callback) {
             $('#multimissionOptionList').append($('<option>', {value: i, text: i}));
         }
         updateMultimissionState();
-        $('#activeNissionIndex').text(1);   // CR8
+        $('#activeNissionIndex').text(1);
     }
 
     function updateMultimissionState() {
@@ -787,7 +787,7 @@ TABS.mission_control.initialize = function (callback) {
                     totalmultimissionWPs = multimission.get().length + mission.get().length;
                     $("#updateMultimissionButton").removeClass('disabled');
                     $("#setActiveMissionButton").removeClass('disabled');
-                    $('#missionPlanerElevation').show();    // CR13
+                    $('#missionPlanerElevation').show();
                 } else {
                     $('#missionDistance').text('N/A');
                     totalmultimissionWPs = mission.get().length;
@@ -795,7 +795,7 @@ TABS.mission_control.initialize = function (callback) {
                     $("#updateMultimissionButton").addClass('disabled');
                     $("#setActiveMissionButton").addClass('disabled');
                     setMultimissionEditControl(true);
-                    $('#missionPlanerElevation').hide();    // CR13
+                    $('#missionPlanerElevation').hide();
                 }
                 $('#multimissionInfo').text(multimissionCount + ' missions (' + totalmultimissionWPs + '/' + mission.getMaxWaypoints() + ' WPs)');
                 document.getElementById('multimissionInfo').style.color = totalmultimissionWPs > mission.getMaxWaypoints() ? "#FF0000" : "#303030";
@@ -807,9 +807,9 @@ TABS.mission_control.initialize = function (callback) {
             }
         } else {
             $("#addMultimissionButton").addClass('disabled');
-            $("#setActiveMissionButton").addClass('disabled');  // CR8
+            $("#setActiveMissionButton").addClass('disabled');
         }
-        updateTotalInfo();  // CR13
+        updateTotalInfo();
     }
 
     // /* checks if single mission loaded on map */
@@ -892,19 +892,19 @@ TABS.mission_control.initialize = function (callback) {
             mission.get()[i].setNumber(i);
             i++;
         });
-        mission.setMaxWaypoints(multimission.getMaxWaypoints());    // CR13
+        mission.setMaxWaypoints(multimission.getMaxWaypoints());
 
         multimission.get().splice(startWPCount, (endWPCount - startWPCount + 1))    // cut current active map mission from MM
 
         mission.update();
-        updateMultimissionState();  // CR13
+        updateMultimissionState();
 
         selectedMarker = null;
         clearEditForm();
         setView(14);
         refreshLayers();
         updateTotalInfo();
-        plotElevation();    // CR13
+        plotElevation();
     }
 
     /* single mission selection using WP Edit panel button */
@@ -1586,8 +1586,6 @@ TABS.mission_control.initialize = function (callback) {
             if (disableMarkerEdit) return false;
 
             var map = evt.map;
-
-            var map = evt.map;
             var feature = map.forEachFeatureAtPixel(evt.pixel,
                 function (feature, layer) {
                     return feature;
@@ -1806,7 +1804,6 @@ TABS.mission_control.initialize = function (callback) {
                     selectedMarker = null;
                     selectedFeature = null;
                     tempMarker = null;
-                    // clearEditForm();
                 } catch (e) {
                     console.log(e);
                     GUI.log("Previous selection was not a WAYPOINT!");
@@ -1829,17 +1826,6 @@ TABS.mission_control.initialize = function (callback) {
                 selectedFeature.setStyle(getWaypointIcon(selectedMarker, true));
 
                 var altitudeMeters = app.ConvertCentimetersToMeters(selectedMarker.getAlt());
-                if (tempSelectedMarkerIndex == null || tempSelectedMarkerIndex != selectedMarker.getLayerNumber()) {
-                    (async () => {
-                        const elevationAtWP = await selectedMarker.getElevation(globalSettings);
-                        $('#elevationValueAtWP').text(elevationAtWP);
-                        const returnAltitude = checkAltElevSanity(false, selectedMarker.getAlt(), elevationAtWP, selectedMarker.getP3());
-                        selectedMarker.setAlt(returnAltitude);
-                        plotElevation();
-                    })()
-                }
-                $('#elevationAtWP').fadeIn();   // CR7
-                $('#groundClearanceAtWP').fadeIn();
 
                 if (tempSelectedMarkerIndex == null || tempSelectedMarkerIndex != selectedMarker.getLayerNumber()) {
                     (async () => {
@@ -2189,7 +2175,6 @@ TABS.mission_control.initialize = function (callback) {
 
         $('#editMission').on('click', function () {
             mapSelectEditMultimission(selectedMarker.getNumber());
-            // updateMultimissionState();   // CR13
         });
 
         /////////////////////////////////////////////
@@ -2291,11 +2276,10 @@ TABS.mission_control.initialize = function (callback) {
                 });
                 if (missions == 1) updateAllMultimission();
 
-                editMultimission(); // CR13
-                // updateMultimissionState();   // CR13
+                editMultimission();
             } else {
                 updateAllMultimission();
-                updateMultimissionState();   // CR13
+                updateMultimissionState();
             }
         });
 
@@ -2310,11 +2294,11 @@ TABS.mission_control.initialize = function (callback) {
         $('#cancelMultimission').on('click', function () {
             $('#missionPlannerMultiMission').fadeOut(300);
         });
-        // CR8
+
         $('#setActiveMissionButton').on('click', function () {
             $('#activeNissionIndex').text(Number($('#multimissionOptionList').val()));
         });
-        // CR8
+
         /////////////////////////////////////////////
         // Callback for Remove buttons
         /////////////////////////////////////////////
@@ -2712,14 +2696,14 @@ TABS.mission_control.initialize = function (callback) {
             if (saveEeprom) {
                 $('#saveEepromMissionButton').removeClass('disabled');
                 GUI.log(chrome.i18n.getMessage('eeprom_saved_ok'));
-                MSP.send_message(MSPCodes.MSP_WP_MISSION_SAVE, [0], false, setMissionIndex);    // CR8
+                MSP.send_message(MSPCodes.MSP_WP_MISSION_SAVE, [0], false, setMissionIndex);
             } else {
                 $('#saveMissionButton').removeClass('disabled');
             }
             mission.setMaxWaypoints(MISSION_PLANER.getMaxWaypoints());
             mission.setValidMission(MISSION_PLANER.getValidMission());
             mission.setCountBusyPoints(MISSION_PLANER.getCountBusyPoints());
-            multimission.setMaxWaypoints(mission.getMaxWaypoints());    // CR13
+            multimission.setMaxWaypoints(mission.getMaxWaypoints());
             updateTotalInfo();
             mission.reinit();
             mission.copy(MISSION_PLANER);
@@ -2727,7 +2711,6 @@ TABS.mission_control.initialize = function (callback) {
             refreshLayers();
             $('#MPeditPoint').fadeOut(300);
         });
-        // CR8
         function setMissionIndex() {
             let activeIndex = singleMissionActive() ? 1 : $('#activeNissionIndex').text();
             mspHelper.setSetting("nav_wp_multi_mission_index", activeIndex, function () {
@@ -2736,18 +2719,14 @@ TABS.mission_control.initialize = function (callback) {
                 });
             });
         }
-        // CR8
     }
 
     function updateTotalInfo() {
         if (CONFIGURATOR.connectionValid) {
-            // CR13
-            // let availableWPs = mission.getMaxWaypoints() - mission.getCountBusyPoints();
             let availableWPs = mission.getMaxWaypoints() - mission.get().length;
             if (multimissionCount && singleMissionActive()) {
                 availableWPs = availableWPs - multimission.get().length;
             }
-            // CR13
             $('#availablePoints').text(availableWPs + '/' + mission.getMaxWaypoints());
             $('#missionValid').html(mission.getValidMission() ? chrome.i18n.getMessage('armingCheckPass') : chrome.i18n.getMessage('armingCheckFail'));
         }
@@ -2862,12 +2841,10 @@ TABS.mission_control.initialize = function (callback) {
                         },
                     };
 
-                    // CR13
                     let missionNumber = '';
                     if (multimissionCount) {    // plot disabled when all missions displayed so only for single missions
                         missionNumber = ' ' + ($('#multimissionOptionList').val());
                     }
-                    // CR13
                     var layout = {showlegend: true,
                                   legend: {
                                         "orientation": "h",
@@ -2875,10 +2852,7 @@ TABS.mission_control.initialize = function (callback) {
                                         y: 1.3,
                                         x: 0.5
                                   },
-                                  // CR13
                                   title: 'Mission' + missionNumber + ' Elevation Profile',
-                                  // title: 'Mission Elevation Profile',
-                                  // CR13
                                   xaxis: {
                                     title: 'Distance (m)'
                                   },
