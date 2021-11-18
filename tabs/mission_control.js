@@ -1919,7 +1919,7 @@ TABS.mission_control.initialize = function (callback) {
                 }
             }
             //mission.missionDisplayDebug();
-            // if (selectedFeature && tempMarker.kind != "waypoint") clearEditForm();  // CR15
+            if (selectedFeature && tempMarker.kind != "waypoint") clearEditForm();  // CR15
             updateMultimissionState();
         });
 
