@@ -2590,7 +2590,8 @@ TABS.mission_control.initialize = function (callback) {
 
         var center = ol.proj.toLonLat(map.getView().getCenter());
         var zoom = map.getView().getZoom();
-        let version = (multimissionCount && !singleMissionActive()) ? '4.0.0' : '2.3-pre8';    // CR14
+        let multimission = multimissionCount && !singleMissionActive();     // CR14
+        let version = multimission ? '4.0.0' : '2.3-pre8';    // CR14
         var data = {
             'version': { $: { 'value': version } },
             'mwp': { $: { 'cx': (Math.round(center[0] * 10000000) / 10000000),     // CR14
@@ -2602,7 +2603,14 @@ TABS.mission_control.initialize = function (callback) {
         };
 
         let missionStartWPNumber = 0;  // CR14
+        let missionNumber = 1;      // CR14
         mission.get().forEach(function (waypoint) {
+            if (waypoint.getNumber() - missionStartWPNumber == 0 && multimission) {
+                let meta = {$:{
+                        'mission': missionNumber
+                    }};
+                data.missionitem.push(meta);
+            }
             var point = {$:{
                         'no': waypoint.getNumber() - missionStartWPNumber + 1,  // CR14
                         'action': MWNP.WPTYPE.REV[waypoint.getAction()],
@@ -2614,16 +2622,18 @@ TABS.mission_control.initialize = function (callback) {
                         'parameter3': waypoint.getP3(),
                         'flag': waypoint.getEndMission(),
                     }};
+            data.missionitem.push(point);
             // CR14
             if (waypoint.getEndMission() == 0xA5) {
                 missionStartWPNumber = waypoint.getNumber() + 1;
+                missionNumber ++;
             }
             // CR14
-            data.missionitem.push(point);
         });
         // var builder = new window.xml2js.Builder({ 'rootName': 'mission', 'renderOpts': { 'pretty': true, 'indent': '\t', 'newline': '\n', 'allowEmpty': true} });
         var builder = new window.xml2js.Builder({ 'rootName': 'mission', 'renderOpts': { 'pretty': true, 'indent': '\t', 'newline': '\n'}});
         var xml = builder.buildObject(data);
+        xml = xml.replace(/missionitem mission/g, 'meta mission');    // CR14
         fs.writeFile(filename, xml, (err) => {
             if (err) {
                 GUI.log('<span style="color: red">Error writing file</span>');
