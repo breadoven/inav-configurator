@@ -2362,6 +2362,7 @@ OSD.GUI.updateUnits = function() {
     $unitMode.change(function (e) {
         var selected = $(this).find(':selected');
         OSD.data.preferences.units = selected.data('type');
+        globalSettings.osdUnits = OSD.data.preferences.units;
         OSD.GUI.saveConfig();
         updateUnitHelp();
     });
