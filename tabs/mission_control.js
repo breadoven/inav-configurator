@@ -432,9 +432,9 @@ TABS.mission_control.initialize = function (callback) {
     //
     /////////////////////////////////////////////
     function loadSettings() {
-        chrome.storage.local.get('missionPlanerSettings', function (result) {
-            if (result.missionPlanerSettings) {
-                settings = result.missionPlanerSettings;
+        chrome.storage.local.get('missionPlannerSettings', function (result) {
+            if (result.missionPlannerSettings) {
+                settings = result.missionPlannerSettings;
             // CR4 can't reproduce now, maybe a config issue after flashing
             } // else {
                 // settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
