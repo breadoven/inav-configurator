@@ -43,6 +43,9 @@
     "deviceReady": {
         "message": "Device - <span style=\"color: #37a8db\">Ready</span>"
     },
+    "savingDefaults": {
+        "message": "Device - <span style=\"color: red\">Saving default settings</span>"
+    },
     "fcNotConnected": {
         "message": "Not connected"
     },
@@ -1139,6 +1142,9 @@
     },
     "portsFunction_DJI_FPV": {
         "message": "DJI FPV VTX"
+    },
+    "portsFunction_HDZERO_VTX": {
+        "message": "HDZero VTX"
     },
     "portsFunction_IMU2": {
         "message": "Secondary IMU"
@@ -3570,9 +3576,6 @@
     },
     "platformConfiguration": {
         "message": "Platform configuration"
-    },
-    "platformHasFlaps": {
-        "message": "Has flaps"
     },
     "mixerPreset": {
         "message": "Mixer preset"
