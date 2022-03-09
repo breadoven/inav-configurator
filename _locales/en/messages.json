@@ -18,7 +18,7 @@
     "options_render": {
         "message": "Configurator rendering options"
     },
-    
+
     "connect": {
         "message": "Connect"
     },
@@ -1747,6 +1747,12 @@
     },
     "cliCopyToClipboardBtn": {
         "message": "Copy to clipboard"
+    },
+    "cliExitBtn": {
+        "message": "EXIT"
+    },
+    "cliSaveSettingsBtn": {
+        "message": "SAVE SETTINGS"
     },
     "cliCopySuccessful": {
         "message": "Copied!"
