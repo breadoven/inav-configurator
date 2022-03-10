@@ -458,8 +458,6 @@ TABS.cli.cleanup = function (callback) {
         if (callback) callback();
         return;
     }
-    GUI.log(CONFIGURATOR.connectionValid + " boot exit send ");
-    GUI.log(CONFIGURATOR.cliValid + " " + CONFIGURATOR.cliActive);
     this.send(getCliCommand('exit\r', this.cliBuffer), function (writeInfo) {
         // we could handle this "nicely", but this will do for now
         // (another approach is however much more complicated):
@@ -467,10 +465,7 @@ TABS.cli.cleanup = function (callback) {
         // we could probably implement this some day
         helper.timeout.add('waiting_for_bootup', function waiting_for_bootup() {
             if (callback) callback();
-            GUI.log(CONFIGURATOR.connectionValid + " boot callback " + CONFIGURATOR.cliActive);
         }, 1000); // if we dont allow enough time to reboot, CRC of "first" command sent will fail, keep an eye for this one
         CONFIGURATOR.cliActive = false;
-        GUI.log(CONFIGURATOR.connectionValid + " boot timeout " + CONFIGURATOR.cliActive);
-        GUI.log(CONFIGURATOR.cliValid + " " + CONFIGURATOR.cliActive);
     });
 };

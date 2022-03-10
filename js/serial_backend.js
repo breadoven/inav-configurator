@@ -132,17 +132,14 @@ $(document).ready(function () {
 
                     if (CONFIGURATOR.cliActive) {
                         GUI.tab_switch_cleanup(finishDisconnect);
-                        GUI.log(CONFIGURATOR.connectionValid + " cliactive ");
                     } else {
                         GUI.tab_switch_cleanup();
                         finishDisconnect();
-                        GUI.log(CONFIGURATOR.connectionValid + " other tab active ");
                     }
 
                     function finishDisconnect() {
                         GUI.tab_switch_in_progress = false;
                         CONFIGURATOR.connectionValid = false;
-                        GUI.log(CONFIGURATOR.connectionValid + " finishdisconnect ");
                         GUI.connected_to = false;
                         GUI.allowedTabs = GUI.defaultAllowedTabsWhenDisconnected.slice();
 
