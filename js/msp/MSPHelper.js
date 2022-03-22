@@ -720,7 +720,7 @@ var mspHelper = (function (gui) {
                 BOARD_ALIGNMENT.pitch = data.getInt16(2, true); // -180 - 360
                 BOARD_ALIGNMENT.yaw = data.getInt16(4, true); // -180 - 360
                 break;
-            
+
             case MSPCodes.MSP_SET_BOARD_ALIGNMENT:
                 console.log('MSP_SET_BOARD_ALIGNMENT saved');
                 break;
@@ -1559,7 +1559,7 @@ var mspHelper = (function (gui) {
                 buffer.push(specificByte(CURRENT_METER_CONFIG.capacity, 0));
                 buffer.push(specificByte(CURRENT_METER_CONFIG.capacity, 1));
                 break;
-                
+
             case MSPCodes.MSP_SET_VTX_CONFIG:
                 if (VTX_CONFIG.band > 0) {
                     buffer.push16(((VTX_CONFIG.band - 1) * 8) + (VTX_CONFIG.channel - 1));
@@ -2161,7 +2161,7 @@ var mspHelper = (function (gui) {
         buffer.push(highByte(BLACKBOX.blackboxRateDenom));
         //noinspection JSUnusedLocalSymbols
         MSP.send_message(messageId, buffer, false, function (response) {
-        onDataCallback();
+            onDataCallback();
         });
     };
 
@@ -2757,7 +2757,7 @@ var mspHelper = (function (gui) {
     self.loadBoardAlignment = function (callback) {
         MSP.send_message(MSPCodes.MSP_BOARD_ALIGNMENT, false, false, callback);
     };
-    
+
     self.loadCurrentMeterConfig = function (callback) {
         MSP.send_message(MSPCodes.MSP_CURRENT_METER_CONFIG, false, false, callback);
     };

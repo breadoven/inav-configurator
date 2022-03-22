@@ -1754,6 +1754,9 @@
     "cliSaveSettingsBtn": {
         "message": "SAVE SETTINGS"
     },
+    "cliMscBtn": {
+        "message": "MSC"
+    },
     "cliCopySuccessful": {
         "message": "Copied!"
     },
