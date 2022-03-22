@@ -178,7 +178,7 @@ TABS.cli.initialize = function (callback) {
 
             });
         });
-        // CR17
+
         $('.tab-cli .exit').click(function() {
             self.send(getCliCommand('exit\r', TABS.cli.cliBuffer));
         });
@@ -190,7 +190,7 @@ TABS.cli.initialize = function (callback) {
         $('.tab-cli .msc').click(function() {
             self.send(getCliCommand('msc\r', TABS.cli.cliBuffer));
         });
-        // CR17
+
         $('.tab-cli .clear').click(function() {
             self.outputHistory = "";
             $('.tab-cli .window .wrapper').empty();
