@@ -1545,7 +1545,7 @@ TABS.mission_control.initialize = function (callback) {
          // * @param {Object=} opt_options Control options.
          // */
         app.PlannerMultiMissionControl = function (opt_options) {
-            
+
             var options = opt_options || {};
             var button = document.createElement('button');
 
@@ -2660,7 +2660,8 @@ TABS.mission_control.initialize = function (callback) {
                     alert(chrome.i18n.getMessage('no_waypoints_to_load'));
                     return;
                 }
-
+                // alert(MISSION_PLANNER.getFirstWpIndex());
+                // alert(MISSION_PLANNER.getCountBusyPoints());
                 mission.reinit();
                 mission.copy(MISSION_PLANNER);
                 mission.update(false, true);
@@ -2668,6 +2669,15 @@ TABS.mission_control.initialize = function (callback) {
                 /* check multimissions */
                 multimissionCount = 0;
                 mission.get().forEach(function (element) {
+                    // alert("N°: " + element.getNumber() +
+                            // " Action: " + element.getAction()+
+                            // " Lon: "+ element.getLon()+
+                            // " Lat: "+ element.getLat()+
+                            // " Alt: "+ element.getAlt()+
+                            // " P1: "+ element.getP1()+
+                            // " P2: "+ element.getP2()+
+                            // " P3: "+ element.getP3()+
+                            // " EndMission: "+ element.getEndMission());
                     if (element.getEndMission() == 0xA5) {
                         multimissionCount ++;
                     }

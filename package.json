@@ -47,7 +47,7 @@
   "devDependencies": {
     "@quanle94/innosetup": "^6.0.2",
     "gulp-debian": "^0.1.9",
-    "nw-builder": "^3.5.7",
+    "nw-builder": "^3.8.2",
     "rpm-builder": "^1.2.1",
     "semver": "6.3.0"
   },

@@ -5,12 +5,21 @@ let WaypointCollection = function () {
 
     let self = {},
         data = [],
+        firstWpIndex = 0,   // CR74
         maxWaypoints = 120,
         isValidMission = 0,
         countBusyPoints = 0,
         version = 0,
         center = {}
+    // CR74
+    self.getFirstWpIndex = function () {
+        return firstWpIndex;
+    };
 
+    self.setFirstWpIndex = function (data) {
+        firstWpIndex = data;
+    };
+    // CR74
     self.getMaxWaypoints = function () {
         return maxWaypoints;
     };

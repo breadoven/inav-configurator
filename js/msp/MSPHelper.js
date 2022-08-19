@@ -477,9 +477,9 @@ var mspHelper = (function (gui) {
                             data.getInt8(i + 13)
                         ));
                     }
-                }   
+                }
                 break;
-            
+
             case MSPCodes.MSP2_INAV_LOGIC_CONDITIONS_SINGLE:
                 LOGIC_CONDITIONS.put(new LogicCondition(
                     data.getInt8(0),
@@ -1370,6 +1370,7 @@ var mspHelper = (function (gui) {
                 break;
             case MSPCodes.MSP_WP_GETINFO:
                 // Reserved for waypoint capabilities data.getUint8(0);
+                MISSION_PLANNER.setFirstWpIndex(data.getUint8(0));  // CR74
                 MISSION_PLANNER.setMaxWaypoints(data.getUint8(1));
                 MISSION_PLANNER.setValidMission(data.getUint8(2));
                 MISSION_PLANNER.setCountBusyPoints(data.getUint8(3));
@@ -2270,8 +2271,8 @@ var mspHelper = (function (gui) {
         }
     };
 
-    self.loadLogicConditions = function (callback) {   
-        if (semver.gte(CONFIG.flightControllerVersion, "5.0.0")) {        
+    self.loadLogicConditions = function (callback) {
+        if (semver.gte(CONFIG.flightControllerVersion, "5.0.0")) {
             LOGIC_CONDITIONS.flush();
             let idx = 0;
             MSP.send_message(MSPCodes.MSP2_INAV_LOGIC_CONDITIONS_SINGLE, [idx], false, nextLogicCondition);
