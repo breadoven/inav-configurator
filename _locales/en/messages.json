@@ -3018,6 +3018,12 @@
     "osd_crosshairs_style": {
         "message" : "Crosshairs Style"
     },
+    "osd_horizon_offset": {
+        "message" : "AHI & HUD offset"
+    },
+    "osd_horizon_offset_help" : {
+        "message" : "Move the HUD and AHI up or down on the OSD to get it level with the actual horizon. The AHI can appear high or low depending on the camera angle in flight. <span style='color:red;'>NOTE: </span> This does not work with the Pixel OSD. For that use the `osd_ahi_vertical_offset` command in the CLI."
+    },
     "osd_left_sidebar_scroll": {
         "message" : "Left Sidebar Scroll"
     },
@@ -4120,7 +4126,7 @@
         "message": "Should be enabled on Airplanes, Rovers and Boats. Should not be enabled on Multirotors! On Multirotors, when Airmode is active, motors will not stop."
     },
     "reversibleEscWarning": {
-        "message": "When Reversible Motors are used, set Motors IDLE power ot 0%"
+        "message": "When Reversible Motors are used, set Motors IDLE power to 0%"
     },
     "dynamic_gyro_notch_enabled_help": {
         "message": "Matrix Gyro Filter is the new generation of dynamic gyro notches available in INAV. It is recommended to enable it on all Multirotor builds on F4 and F7 flight controllers."
@@ -4293,6 +4299,15 @@
     "BLACKBOX_FEATURE_GYRO_RAW": {
         "message": "Gyro RAW (no filtering)"
     },
+    "BLACKBOX_FEATURE_GYRO_PEAKS_ROLL": {
+        "message": "Gyro Noise peak freq. Roll"
+    },
+    "BLACKBOX_FEATURE_GYRO_PEAKS_PITCH": {
+        "message": "Gyro Noise peak freq. Pitch"
+    },
+    "BLACKBOX_FEATURE_GYRO_PEAKS_YAW": {
+        "message": "Gyro Noise peak freq. Yaw"
+    },
     "axisRoll": {
         "message": "Roll"
     },
@@ -4304,5 +4319,17 @@
     },
     "showAdvancedPIDs": {
         "message": "Show advanced PID controllers"
+    },
+    "rc_filter_lpf_hz": {
+        "message": "Manual LPF Hz"
+    },
+    "rc_filter_smoothing_factor": {
+        "message": "Auto Smoothing Factor"
+    },
+    "rc_filter_auto": {
+        "message": "Use automatic RC smoothing"
+    },
+    "rcSmoothing": {
+        "message": "RC Smoothing"
     }
 }
