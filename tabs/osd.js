@@ -1899,6 +1899,12 @@ OSD.constants = {
                     id: 135,
                     preview: 'LEVEL  ' + FONT.embed_dot('5.4')
                 },
+                // CR76
+                {
+                    name: 'MISSION_INDEX',
+                    id: 139,
+                    preview: 'WP NO 7'
+                },
             ]
         },
         {

@@ -1370,7 +1370,6 @@ var mspHelper = (function (gui) {
                 break;
             case MSPCodes.MSP_WP_GETINFO:
                 // Reserved for waypoint capabilities data.getUint8(0);
-                MISSION_PLANNER.setFirstWpIndex(data.getUint8(0));  // CR74
                 MISSION_PLANNER.setMaxWaypoints(data.getUint8(1));
                 MISSION_PLANNER.setValidMission(data.getUint8(2));
                 MISSION_PLANNER.setCountBusyPoints(data.getUint8(3));
