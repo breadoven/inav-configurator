@@ -502,6 +502,7 @@ OSD.DjiElements =  {
         "Timers",
         "VTX",
         "CRSF",
+        "SwitchIndicators",
         "GVars",
         "PIDs",
         "PIDOutputs",
@@ -2640,6 +2641,8 @@ OSD.GUI.updateDjiView = function(on) {
                 $(element).hide();
             }
         });
+
+        $('.switch-indicator-container').hide();
     } else {
         $(OSD.DjiElements.emptyGroups).each(function(index, groupName) {
             $('#osdGroup' + groupName).show();
@@ -2652,6 +2655,8 @@ OSD.GUI.updateDjiView = function(on) {
         $('.settings-container, .alarms-container').find('.settings').children()
             .show()
             .removeClass('no-bottom');
+
+        $('.switch-indicator-container').show();
     }
     OSD.GUI.updateDjiMessageElements($('#useCraftnameForMessages').is(':checked'));
 };
@@ -2985,7 +2990,7 @@ TABS.osd.initialize = function (callback) {
             }
             $fontPicker.removeClass('active');
             $(this).addClass('active');
-            $.get('/resources/osd/' + $(this).data('font-file') + '.mcm', function (data) {
+            $.get('/resources/osd/analogue/' + $(this).data('font-file') + '.mcm', function (data) {
                 FONT.parseMCMFontFile(data);
                 FONT.preview($preview);
                 OSD.GUI.update();
