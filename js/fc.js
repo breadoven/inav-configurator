@@ -92,8 +92,7 @@ var FC = {
             gpsHwStatus: 0,
             rangeHwStatus: 0,
             speedHwStatus: 0,
-            flowHwStatus: 0,
-            imu2HwStatus: 0
+            flowHwStatus: 0
         };
 
         SENSOR_CONFIG = {
@@ -1240,7 +1239,10 @@ var FC = {
                     7: "Horizon",
                     8: "Air",
                     9: "USER 1",
-                    10: "USER 2"
+                    10: "USER 2",
+                    11: "Course Hold",
+                    12: "USER 3",
+                    13: "USER 4",
                 }
             },
             4: {

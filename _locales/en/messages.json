@@ -1014,10 +1014,10 @@
         "message": "Gps use Galileo Satellites"
     },
     "tzOffset": {
-        "message": "Timezone Offset [Mins]"
+        "message": "Timezone Offset"
     },
     "tzOffsetHelp": {
-        "message": "Time zone offset from UTC, in minutes. This is applied to the GPS time for logging and time-stamping of Blackbox logs. (Default = 0)"
+        "message": "Time zone offset from UTC. This is applied to the GPS time for logging and time-stamping of Blackbox logs. (Default = 0 mins)"
     },
     "tzAutomaticDST": {
         "message": "Automatic Daylight Savings Time"
@@ -1166,11 +1166,8 @@
     "portsFunction_DJI_FPV": {
         "message": "DJI FPV VTX"
     },
-    "portsFunction_HDZERO_VTX": {
-        "message": "HDZero VTX"
-    },
-    "portsFunction_IMU2": {
-        "message": "Secondary IMU"
+    "portsFunction_MSP_DISPLAYPORT": {
+        "message": "MSP Displayport"
     },
     "pidTuning_ShowAllPIDs": {
         "message": "Show all PIDs"
@@ -2128,8 +2125,7 @@
         "message": "No reboot sequence"
     },
     "firmwareFlasherOnlineSelectBoardDescription": {
-
-        "message": "Select your board to see available online firmware releases - Select the correct firmware appropriate for your board."
+        "message": "Select your board to see available online firmware releases - Select the correct firmware appropriate for your board. Please note that <strong>Auto-select Target</strong> will only work for INAV firmwares 5.0 and newer."
     },
     "firmwareFlasherOnlineSelectFirmwareVersionDescription": {
         "message": "Select firmware version for your board."
@@ -2178,6 +2174,9 @@
     },
     "firmwareFlasherOptionLabelSelectFirmwareVersionFor": {
         "message": "Choose a Firmware version for"
+    },
+    "firmwareFlasherButtonAutoSelect": {
+        "message": "Auto-select Target"
     },
     "firmwareFlasherButtonLoadLocal": {
         "message": "Load Firmware [Local]"
@@ -2587,10 +2586,13 @@
         "message": "Acc Gain"
     },
     "NoteCalibration": {
-        "message": "Note: If the flightcontroller is mounted in another angle or upside down, do the calibration steps with the flightcontroller pointing as shown in the pictures, not the quad (otherwise calibration won´t work)."
+        "message": "Note: If the IMU is mounted in another angle or on the underside of the flight controller. Do the calibration steps with the IMU pointing as shown in the pictures, not the quad (otherwise calibration won´t work)."
     },
     "AccBtn": {
         "message": "Calibrate Accelerometer"
+    },
+    "AccResetBtn": {
+        "message": "Reset Accelerometer Calibration"
     },
     "MagCalText": {
         "message": "After pressing the button you have 30 seconds to hold the copter in the air and rotate it so that each side (front, back, left, right, top and bottom) points down towards the earth."
@@ -2897,6 +2899,12 @@
     },
     "pitchToThrottleHelp": {
         "message": "In navigation modes, each degree of climb will add this many units to the cruise throttle. Conversely, each degree of diving will substract from it."
+    },
+    "minThrottleDownPitch": {
+        "message": "Min Throttle Down Pitch"
+    },
+    "minThrottleDownPitchHelp": {
+        "message": "Automatic pitch down angle when throttle is at 0 in angle mode. Progressively applied between cruise throttle and zero throttle."
     },
     "pitchToThrottleSmoothing": {
         "message": "Throttle smoothing"
@@ -3597,6 +3605,12 @@
     "osdSettingCRSF_LQ_FORMAT_HELP": {
         "message": "TYPE1 shows LQ% as used by TBS hardware. TYPE2 shows RF Profile Modes (2=150Hz, 1=50Hz, 0=4Hz update rates) and LQ % [0..100%]. Tracer shows RFMode 1 (1=250Hz) and LQ % [0..100%]."
     },
+    "osd_video_show_guides": {
+        "message": "Show preview guides"
+    },
+    "osd_video_HELP": {
+        "message": "For HD: red lines show 4:3 screen, HDZero: keep within the blue box for a higher refresh rate, AUTO/PAL: green line is NTSC limit."
+    },
     "osd_dji_HD_FPV": {
         "message" : "DJI HD FPV"
     },
@@ -3803,6 +3817,9 @@
     },
     "platformConfiguration": {
         "message": "Platform configuration"
+    },
+    "output_modeTitle": {
+        "message": "Output mode"
     },
     "mixerPreset": {
         "message": "Mixer preset"
@@ -4334,5 +4351,20 @@
     },
     "rcSmoothing": {
         "message": "RC Smoothing"
+    },
+    "throttle_scale": {
+        "message": "Throttle scale"
+    },
+    "throttle_scale_help": {
+        "message": "Allow to limit effective power fed to the motors. Throttle Scale 1 mean there is no power limiting. Throttle Scale 0.5 means throttle position will be cut in half before passed to the motors."
+    },
+    "pidTuning_MatrixFilterType": {
+        "message": "Matrix Filter Type"
+    },
+    "pidTuning_MatrixFilterTypeHelp": {
+        "message": "Defines the type of Matrix Filter. Default 2D filter is recommended for most users. 7-inch and larger quads may benefit from 3D filter."
+    },
+    "nmeaWarning": {
+        "message": "NMEA protocol is deprecated and might be removed in the future. Please use UBLOX or UBLOX7 protocol instead."
     }
 }
