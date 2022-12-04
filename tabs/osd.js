@@ -109,6 +109,8 @@ SYM.PROFILE = 0xCF;
 SYM.SWITCH_INDICATOR_HIGH = 0xD2;
 SYM.GLIDE_MINS = 0xD5;
 SYM.GLIDE_RANGE = 0xD4;
+SYM.GROUND_COURSE = 0xDC;   // CR18
+SYM.TRACK_ERROR = 0xDD;     // CR18
 
 SYM.AH_AIRCRAFT0 = 0x1A2;
 SYM.AH_AIRCRAFT1 = 0x1A3;
@@ -1359,12 +1361,12 @@ OSD.constants = {
             items: [
                 {
                     name: 'INFO CYCLE',
-                    id: 134,
+                    id: 142,
                     preview: 'INFO   CYCLE'
                 },
                 {
                     name: 'GENERAL STATUS',
-                    id: 135,
+                    id: 143,
                     preview: 'MOVE DRONE!'
                 },
             ]
@@ -1588,6 +1590,30 @@ OSD.constants = {
                     id: 52,
                     preview: FONT.symbol(SYM.HEADING) + ' -90' + FONT.symbol(SYM.DEGREES)
                 },
+                // CR18
+                {
+                    name: 'GROUND COURSE',
+                    id: 140,
+                    min_version: '6.0.0',
+                    preview: FONT.symbol(SYM.GROUND_COURSE) + '245' + FONT.symbol(SYM.DEGREES)
+                },
+                {
+                    name: 'CROSS TRACK ERROR',
+                    id: 141,
+                    min_version: '6.0.0',
+                    preview: function(osd_data) {
+                        switch (OSD.data.preferences.units) {
+                            case 0: // Imperial
+                            case 3: // UK
+                                return FONT.symbol(SYM.TRACK_ERROR) + FONT.embed_dot('0.98') + FONT.symbol(SYM.DIST_MI);
+                            case 4: // GA
+                                return FONT.symbol(SYM.TRACK_ERROR) + FONT.embed_dot('0.85') + FONT.symbol(SYM.DIST_NM);
+                            default: // Metric
+                                return FONT.symbol(SYM.TRACK_ERROR) + FONT.embed_dot('1.57') + FONT.symbol(SYM.DIST_KM);
+                        }
+                    }
+                },
+                // CR18
             ]
         },
         {
