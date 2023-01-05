@@ -112,6 +112,7 @@ SYM.GLIDE_RANGE = 0xD4;
 SYM.FLIGHT_MINS_REMAINING = 0xDA;
 SYM.FLIGHT_DIST_REMAINING = 0x167;
 SYM.GROUND_COURSE = 0xDC;   // CR18
+SYM.ALERT = 0xDD;           // CR88
 SYM.CROSS_TRACK_ERROR = 0xFC;     // CR18
 
 SYM.AH_AIRCRAFT0 = 0x1A2;
@@ -1366,11 +1367,11 @@ OSD.constants = {
                     id: 142,
                     preview: 'INFO   CYCLE'
                 },
-                {
-                    name: 'GENERAL STATUS',
+                { // CR88
+                    name: 'MULTI FUNCTION STATUS',
                     id: 143,
-                    preview: 'MOVE DRONE!'
-                },
+                    preview: '0 WARNINGS'
+                }, // CR88
             ]
         },
         // CR1
