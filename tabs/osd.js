@@ -964,7 +964,13 @@ OSD.constants = {
                     id: 119,
                     min_version: '3.0.0',
                     preview: 'INAV 2.7.0'
-                }
+                },
+                { // CR88
+                    name: 'MULTI FUNCTION STATUS',
+                    id: 143,
+                    min_version: '6.0.0',
+                    preview: '0 WARNINGS'
+                } // CR88
             ]
         },
         {
@@ -1364,14 +1370,9 @@ OSD.constants = {
             items: [
                 {
                     name: 'INFO CYCLE',
-                    id: 142,
+                    id: 143,
                     preview: 'INFO   CYCLE'
                 },
-                { // CR88
-                    name: 'MULTI FUNCTION STATUS',
-                    id: 143,
-                    preview: '0 WARNINGS'
-                }, // CR88
             ]
         },
         // CR1
