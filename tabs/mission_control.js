@@ -1848,13 +1848,6 @@ TABS.mission_control.initialize = function (callback) {
                 $('#pointP1').val(selectedMarker.getP1());
                 $('#pointP2').val(selectedMarker.getP2());
 
-                let P3Value = selectedMarker.getP3();
-
-                changeSwitchery($('#pointP3Alt'), TABS.mission_control.isBitSet(P3Value, 0));
-                changeSwitchery($('#pointP3UserAction1'), TABS.mission_control.isBitSet(P3Value, 1));
-                changeSwitchery($('#pointP3UserAction2'), TABS.mission_control.isBitSet(P3Value, 2));
-                changeSwitchery($('#pointP3UserAction3'), TABS.mission_control.isBitSet(P3Value, 3));
-                changeSwitchery($('#pointP3UserAction4'), TABS.mission_control.isBitSet(P3Value, 4));
 
                 // Selection box update depending on choice of type of waypoint
                 for (var j in dictOfLabelParameterPoint[selectedMarker.getAction()]) {
