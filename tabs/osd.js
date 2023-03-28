@@ -980,7 +980,7 @@ OSD.constants = {
                 },
                 { // CR88
                     name: 'MULTI FUNCTION STATUS',
-                    id: 143,
+                    id: 144,
                     min_version: '6.0.0',
                     preview: '0 WARNINGS'
                 } // CR88
@@ -1383,7 +1383,7 @@ OSD.constants = {
             items: [
                 {
                     name: 'INFO CYCLE',
-                    id: 143,
+                    id: 145,
                     preview: 'INFO   CYCLE'
                 },
             ]

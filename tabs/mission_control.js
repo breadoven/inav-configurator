@@ -46,7 +46,7 @@ var dictOfLabelParameterPoint = {
 };
 
 var waypointOptions = ['JUMP','SET_HEAD','RTH'];
-var initParam3 = 0;
+// var initParam3 = 0;  // CR20
 
 ////////////////////////////////////
 //
@@ -1834,14 +1834,14 @@ TABS.mission_control.initialize = function (callback) {
                 $('#pointP2').val(selectedMarker.getP2());
 
                 let P3Value = selectedMarker.getP3();
-                initParam3 = 0; // Reset init bits for P3 before setting up checkboxes
+                // initParam3 = 0; // Reset init bits for P3 before setting up checkboxes   // CR20
 
                 changeSwitchery($('#pointP3Alt'), TABS.mission_control.isBitSet(P3Value, 0));
                 changeSwitchery($('#pointP3UserAction1'), TABS.mission_control.isBitSet(P3Value, 1));
                 changeSwitchery($('#pointP3UserAction2'), TABS.mission_control.isBitSet(P3Value, 2));
                 changeSwitchery($('#pointP3UserAction3'), TABS.mission_control.isBitSet(P3Value, 3));
                 changeSwitchery($('#pointP3UserAction4'), TABS.mission_control.isBitSet(P3Value, 4));
-                initParam3 = 31; // Set all bits for above P3 params to true, after setting checkboxes
+                // initParam3 = 31; // Set all bits for above P3 params to true, after setting checkboxes
 
                 // Selection box update depending on choice of type of waypoint
                 for (var j in dictOfLabelParameterPoint[selectedMarker.getAction()]) {
@@ -1892,12 +1892,13 @@ TABS.mission_control.initialize = function (callback) {
                 $('.home-lon').val(Math.round(coord[0] * 10000000) / 10000000);
                 $('.home-lat').val(Math.round(coord[1] * 10000000) / 10000000);
             }
-            else if (!disableMarkerEdit) {
+            else if (!disableMarkerEdit) {  // click on map to add new WP
                 let tempWpCoord = ol.proj.toLonLat(evt.coordinate);
                 let tempWp = new Waypoint(mission.get().length, MWNP.WPTYPE.WAYPOINT, Math.round(tempWpCoord[1] * 10000000), Math.round(tempWpCoord[0] * 10000000), alt=Number(settings.alt), p1=Number(settings.speed));
                 if (homeMarkers.length && HOME.getAlt() != "N/A") {
                     (async () => {
                         const elevationAtWP = await tempWp.getElevation(globalSettings);
+
                         tempWp.setAlt(checkAltElevSanity(false, settings.alt, elevationAtWP, 0));
 
                         mission.put(tempWp);
@@ -2116,15 +2117,15 @@ TABS.mission_control.initialize = function (callback) {
                 }
 
                 P3Value = TABS.mission_control.setBit(P3Value, 0, $('#pointP3Alt').prop("checked"));
-                selectedMarker.setP3(P3Value);
 
-                P3Value = TABS.mission_control.setBit(P3Value, 0, $('#pointP3Alt').prop("checked"));
-                selectedMarker.setP3(P3Value);
                 (async () => {
                     const elevationAtWP = await selectedMarker.getElevation(globalSettings);
                     $('#elevationValueAtWP').text(elevationAtWP);
                     var altitude = Number($('#pointAlt').val());
+
                     if (P3Value != selectedMarker.getP3()) {
+                        selectedMarker.setP3(P3Value);// CR20
+
                         if ($('#pointP3Alt').prop("checked")) {
                             if (altitude < 0) {
                                 altitude = settings.alt;
@@ -2153,10 +2154,8 @@ TABS.mission_control.initialize = function (callback) {
                 if (disableMarkerEdit) {
                     changeSwitchery($('#pointP3UserAction1'), TABS.mission_control.isBitSet(selectedMarker.getP3(), 1));
                 }
-
                 P3Value = TABS.mission_control.setBit(selectedMarker.getP3(), 1, $('#pointP3UserAction1').prop("checked"));
                 selectedMarker.setP3(P3Value);
-
                 mission.updateWaypoint(selectedMarker);
                 mission.update(singleMissionActive());
                 redrawLayer();
@@ -2822,7 +2821,8 @@ TABS.mission_control.initialize = function (callback) {
     function checkAltElevSanity(resetAltitude, checkAltitude, elevation, P3Datum) {
         let groundClearance = "NO HOME";
         let altitude = checkAltitude;
-        if (P3Datum) {
+        // if (P3Datum) {
+        if (TABS.mission_control.isBitSet(P3Datum, 0)) {    // CR20
             if (checkAltitude < 100 * elevation) {
                 if (resetAltitude) {
                     alert(chrome.i18n.getMessage('MissionPlannerAltitudeChangeReset'));
@@ -2953,11 +2953,16 @@ TABS.mission_control.isBitSet = function(bits, testBit) {
     return isTrue;
 }
 
+// TABS.mission_control.setBit = function(bits, bit, value) {
+    // return value ? bits |= (1 << bit) : bits &= ~(1 << bit);    // CR20
+// }
 TABS.mission_control.setBit = function(bits, bit, value) {
-    if ((initParam3 & (1 << bit)) != 0) {
-        bits &= ~(0 << bit);
+    // if ((initParam3 & (1 << bit)) != 0) {
+        // bits &= ~(0 << bit);
+        value = value ? 1 : 0;
+        bits &= ~(1 << bit);
         bits |= (value << bit);
-    }
+    // }
     return bits;
 }
 
