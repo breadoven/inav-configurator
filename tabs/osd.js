@@ -114,6 +114,7 @@ SYM.FLIGHT_DIST_REMAINING = 0x167;
 SYM.GROUND_COURSE = 0xDC;
 SYM.ALERT = 0xDD;           // CR88
 SYM.CROSS_TRACK_ERROR = 0xFC;
+SYM.PAN_SERVO_IS_OFFSET_L = 0x1C7;
 
 SYM.AH_AIRCRAFT0 = 0x1A2;
 SYM.AH_AIRCRAFT1 = 0x1A3;
@@ -123,10 +124,16 @@ SYM.AH_AIRCRAFT4 = 0x1A6;
 
 SYM.AH_CROSSHAIRS = new Array(0x166, 0x1A4, new Array(0x190, 0x191, 0x192), new Array(0x193, 0x194, 0x195), new Array(0x196, 0x197, 0x198), new Array(0x199, 0x19A, 0x19B), new Array (0x19C, 0x19D, 0x19E), new Array (0x19F, 0x1A0, 0x1A1));
 
+var useESCTelemetry = false;
+var useBaro         = false;
+var useCRSFRx       = false;
+var usePitot        = false;
+
 var video_type = null;
 var isGuidesChecked = false;
 var FONT = FONT || {};
 
+var FONT = FONT || {};
 FONT.initData = function () {
     if (FONT.data) {
         return;
@@ -878,7 +885,7 @@ OSD.constants = {
                     name: 'AIR_SPEED',
                     id: 27,
                     enabled: function() {
-                        return SENSOR_CONFIG.pitot != 0;
+                        return usePitot;
                     },
                     preview: function(osd_data) {
                         var speed;
@@ -903,7 +910,7 @@ OSD.constants = {
                     name: 'AIR_MAX_SPEED',
                     id: 127,
                     enabled: function() {
-                        return SENSOR_CONFIG.pitot != 0;
+                        return usePitot;
                     },
                     preview: function(osd_data) {
                         // 3 chars
@@ -933,6 +940,9 @@ OSD.constants = {
                     name: 'ESC_RPM',
                     id: 106,
                     min_version: '2.3.0',
+                    enabled: function() {
+                        return useESCTelemetry;
+                    },
                     preview: function(){
                         let rpmPreview = '112974'.substr((6 - parseInt(Settings.getInputValue('osd_esc_rpm_precision'))));
                         return FONT.symbol(SYM.RPM) + rpmPreview;
@@ -965,6 +975,12 @@ OSD.constants = {
                                 return FONT.symbol(SYM.GLIDE_RANGE) + FONT.embed_dot(' 21') + FONT.symbol(SYM.KM);
                         }
                     }
+                },
+                {
+                    name: 'PAN_SERVO_CENTRED',
+                    id: 143,
+                    min_version: '6.0.0',
+                    preview: FONT.symbol(SYM.PAN_SERVO_IS_OFFSET_L) + '120' + FONT.symbol(SYM.DEGREES)
                 },
                 {
                     name: 'MISSION INFO',
@@ -1004,6 +1020,9 @@ OSD.constants = {
                 {
                     name: 'BARO_TEMPERATURE',
                     id: 87,
+                    enabled: function() {
+                        return useBaro;
+                    },
                     preview: function(osd_data) {
                         switch (OSD.data.preferences.units) {
                             case 0: // Imperial
@@ -1017,6 +1036,9 @@ OSD.constants = {
                     name: 'ESC_TEMPERATURE',
                     id: 107,
                     min_version: '2.5.0',
+                    enabled: function() {
+                        return useESCTelemetry;
+                    },
                     preview: function(osd_data) {
                         switch (OSD.data.preferences.units) {
                             case 0: // Imperial
@@ -1696,6 +1718,9 @@ OSD.constants = {
         },
         {
             name: 'osdGroupCRSF',
+            enabled: function() {
+                return useCRSFRx;
+            },
             items: [
                 {
                     name: 'CRSF_RSSI_DBM',
@@ -2552,7 +2577,7 @@ OSD.GUI.updateFields = function() {
             $('<div class="helpicon cf_tip"></div>')
                 .css('margin-top', '1px')
                 .attr('title', groupHelp)
-                .appendTo(groupTitleContainer)
+                .appendTo(groupTitleContainer.parent())
                 .jBox('Tooltip', {
                     delayOpen: 100,
                     delayClose: 100,
@@ -2668,6 +2693,7 @@ OSD.GUI.updateFields = function() {
             })
         );
     }
+
     // TODO: If we add more switches somewhere else, this
     // needs to be called after all of them have been set up
     GUI.switchery();
@@ -2675,6 +2701,7 @@ OSD.GUI.updateFields = function() {
     // Update the OSD preview
     refreshOSDSwitchIndicators();
     updatePilotAndCraftNames();
+    updatePanServoPreview();
 };
 
 OSD.GUI.removeBottomLines = function(){
@@ -2787,6 +2814,13 @@ OSD.GUI.updateDjiView = function(on) {
         $('.switch-indicator-container').show();
     }
     OSD.GUI.updateDjiMessageElements($('#useCraftnameForMessages').is(':checked'));
+};
+
+OSD.GUI.updateAlarms = function() {
+    $(".osd_use_airspeed_alarm").toggle(usePitot);
+    $(".osd_use_baro_temp_alarm").toggle(useBaro);
+    $(".osd_use_esc_telemetry").toggle(useESCTelemetry);
+    $(".osd_use_crsf").toggle(useCRSFRx);
 };
 
 OSD.GUI.updateMapPreview = function(mapCenter, name, directionSymbol, centerSymbol) {
@@ -2999,6 +3033,7 @@ OSD.GUI.updateAll = function() {
         layouts.hide();
         layouts.off('change');
     }
+
     $('.osd_search').on('input', function() {
         OSD.GUI.updateFields();
     });
@@ -3009,6 +3044,7 @@ OSD.GUI.updateAll = function() {
     OSD.GUI.updatePreviews();
     OSD.GUI.updateGuidesView($('#videoGuides').find('input').is(':checked'));
     OSD.GUI.updateDjiView(OSD.data.isDjiHdFpv && !OSD.data.isMspDisplay);
+    OSD.GUI.updateAlarms();
 };
 
 OSD.GUI.update = function() {
@@ -3031,6 +3067,8 @@ OSD.GUI.saveConfig = function() {
 
 TABS.osd = {};
 TABS.osd.initialize = function (callback) {
+
+    mspHelper.loadServoMixRules();
 
     if (GUI.active_tab != 'osd') {
         GUI.active_tab = 'osd';
@@ -3096,6 +3134,17 @@ TABS.osd.initialize = function (callback) {
         // Function to update the OSD layout when the switch text alignment changes
         $("#switchIndicators_alignLeft").on('change', function() {
             refreshOSDSwitchIndicators();
+        });
+
+        // Functions for when pan servo settings change
+        $('#osdPanServoIndicatorShowDegrees').on('change', function() {
+            // Update the OSD preview
+            updatePanServoPreview();
+        });
+
+        $('#panServoOutput').on('change', function() {
+            // Update the OSD preview
+            updatePanServoPreview();
         });
 
         // Function for when text for craft name changes
@@ -3258,9 +3307,28 @@ TABS.osd.initialize = function (callback) {
             OSD.GUI.updateDjiMessageElements(this.checked);
         });
 
+        // Update RX data for Crossfire detection
+        mspHelper.loadRxConfig(function() {
+            useCRSFRx = (RX_CONFIG.serialrx_provider == 6);
+        });
+
+        // Get status of ESC Telemetry
+        useESCTelemetry = false;
+        MSP.send_message(MSPCodes.MSP2_CF_SERIAL_CONFIG, false, false, function() {
+            for (var portIndex = 0; portIndex < SERIAL_CONFIG.ports.length; portIndex++) {
+                var serialPort = SERIAL_CONFIG.ports[portIndex];
+                if (serialPort.functions.indexOf("ESC") >= 0) {
+                    useESCTelemetry = true;
+                    break;
+                }
+            }
+        });
+
         // Update SENSOR_CONFIG, used to detect
         // OSD_AIR_SPEED
         mspHelper.loadSensorConfig(function () {
+            useBaro  = (SENSOR_CONFIG.barometer != 0);
+            usePitot = (SENSOR_CONFIG.pitot != 0);
             GUI.content_ready(callback);
         });
     }));
@@ -3287,12 +3355,12 @@ function refreshOSDSwitchIndicators() {
     }
 
     OSD.GUI.updatePreviews();
-}
+};
 
 function updatePilotAndCraftNames() {
     let foundPilotName = ($('#pilot_name').val() == undefined);
     let foundCraftName = ($('#craft_name').val() == undefined);
-
+    
     let generalGroup = OSD.constants.ALL_DISPLAY_GROUPS.filter(function(e) {
         return e.name == "osdGroupGeneral";
     })[0];
@@ -3324,6 +3392,55 @@ function updatePilotAndCraftNames() {
             if (foundCraftName && foundPilotName) {
                 break;
             }
+        }
+    }
+
+    OSD.GUI.updatePreviews();
+};
+
+function updatePanServoPreview() {
+    // Show or hide the settings, based on of the feature is active.
+    if ($('#panServoOutput').val() === "0") {
+        $('#osd_pan_settings').hide();
+        $('#panServoOutput').parent().addClass('no-bottom');
+    } else {
+        $('#osd_pan_settings').show();
+        $('#panServoOutput').parent().removeClass('no-bottom');
+    }
+
+    // Update the panServoOutput select to be visibly easier to use
+    let servoRules = SERVO_RULES;
+    $('#panServoOutput option').each(function() {
+        let servoIndex = $(this).val();
+        
+        if (servoIndex === "0") {
+            $(this).text("OFF");
+        } else {
+            let servo = servoRules.getServoMixRuleFromTarget(servoIndex);
+            if (servo == null) {
+                $(this).remove();
+            } else {
+                let servoInputIndex = parseInt(servo.getInput());
+                $(this).text("Servo " + servoIndex + ": " + FC.getServoMixInputName(servoInputIndex));
+            }
+        }
+    });
+
+    // Update the OSD preview based on settings
+    let generalGroup = OSD.constants.ALL_DISPLAY_GROUPS.filter(function(e) {
+        return e.name == "osdGroupGeneral";
+      })[0];
+
+    for (let si = 0; si < generalGroup.items.length; si++) {
+        if (generalGroup.items[si].name == "PAN_SERVO_CENTRED") {
+            let craftNameText = $('#craft_name').val();
+
+            if ($('#osdPanServoIndicatorShowDegrees').prop('checked')) {
+                generalGroup.items[si].preview = FONT.symbol(SYM.PAN_SERVO_IS_OFFSET_L) + '120' + FONT.symbol(SYM.DEGREES);
+            } else {
+                generalGroup.items[si].preview = FONT.symbol(SYM.PAN_SERVO_IS_OFFSET_L);
+            }
+            break;
         }
     }
 
