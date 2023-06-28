@@ -493,7 +493,7 @@ TABS.cli.cleanup = function (callback) {
         // we could handle this "nicely", but this will do for now
         // (another approach is however much more complicated):
         // we can setup an interval asking for data lets say every 200ms, when data arrives, callback will be triggered and tab switched
-        // we could probably implement this someday
+        // we could probably implement this some day
         helper.timeout.add('waiting_for_bootup', function waiting_for_bootup() {
             if (callback) callback();
         }, 1000); // if we dont allow enough time to reboot, CRC of "first" command sent will fail, keep an eye for this one

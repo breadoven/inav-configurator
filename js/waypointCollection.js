@@ -362,6 +362,7 @@ let WaypointCollection = function () {
                 namePoint2measure.push(self.getWaypoint(nStart).getLayerNumber()+1);
                 let useAbsoluteAlt = (self.getWaypoint(nStart).getP3() & (1 << 0));
                 refPoint2measure.push(useAbsoluteAlt);
+                // refPoint2measure.push(self.getWaypoint(nStart).getP3()); // CR20
                 nStart++;
             }
             else if (self.getWaypoint(nStart).getAction() == MWNP.WPTYPE.JUMP) {
@@ -462,15 +463,19 @@ let WaypointCollection = function () {
             });
             const response = await fetch('https://api.opentopodata.org/v1/aster30m?locations='+coordList+'&samples='+String(samples+1));
             const myJson = await response.json();
-
             if (myJson.status == "OK") {
                 elevation = [];
+                var dataError = false;
                 for (var i = 0; i < myJson.results.length; i++){
                     if (myJson.results[i].elevation == null) {
                         elevation[i] = 0;
+                        dataError = true;
                     } else {
                         elevation[i] = myJson.results[i].elevation;
                     }
+                }
+                if (dataError) {
+                    alert("Dodgy Topo Data!");
                 }
             }
         }

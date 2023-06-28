@@ -49,6 +49,20 @@ TABS.auxiliary.initialize = function (callback) {
         modeSections["Misc Modes"] = ["BEEPER", "LEDS OFF", "LIGHTS", "HOME RESET", "WP PLANNER", "MISSION CHANGE", "BLACKBOX", "FAILSAFE", "KILLSWITCH", "TELEMETRY", "MSP RC OVERRIDE", "USER1", "USER2", "USER3", "USER4"];
 
     function sort_modes_for_display() {
+        // This array defines the order that the modes are displayed in the configurator modes page
+        const configuratorBoxOrder = [
+            "ARM", "PREARM",                                                                                        // Arming
+            "ANGLE", "HORIZON", "MANUAL",                                                                           // Flight modes
+            "NAV RTH", "NAV COURSE HOLD", "NAV CRUISE", "NAV POSHOLD", "NAV WP", "GCS NAV", "WP PLANNER",           // Navigation modes
+            "NAV ALTHOLD", "HEADING HOLD", "AIR MODE", "SURFACE",                                                   // Flight mode modifiers
+            "AUTO TUNE", "SERVO AUTOTRIM", "AUTO LEVEL", "NAV LAUNCH", "LOITER CHANGE", "FLAPERON", "TURN ASSIST", "SOARING",  // Fixed wing specific
+            "FPV ANGLE MIX", "TURTLE", "MC BRAKING", "HEADFREE", "HEADADJ",                                         // Multi-rotor specific
+            "OSD OFF", "OSD ALT 1", "OSD ALT 2", "OSD ALT 3",                                                       // OSD
+            "CAMSTAB", "CAMERA CONTROL 1", "CAMERA CONTROL 2", "CAMERA CONTROL 3",                                  // FPV Camera
+            "BEEPER", "LEDS OFF", "LIGHTS", "HOME RESET", "BLACKBOX", "FAILSAFE", "KILLSWITCH",       // Misc
+                "TELEMETRY", "MSP RC OVERRIDE", "USER1", "USER2"
+        ];
+
         // Sort the modes
         var tmpAUX_CONFIG = [];
         var tmpAUX_CONFIG_IDS =[];

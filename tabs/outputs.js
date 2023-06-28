@@ -119,7 +119,7 @@ TABS.outputs.initialize = function (callback) {
         }
 
         let $escProtocol = $('#esc-protocol');
-        
+
         for (i in escProtocols) {
             if (escProtocols.hasOwnProperty(i)) {
                 var protocolData = escProtocols[i];

@@ -142,7 +142,6 @@ TABS.mission_control.initialize = function (callback) {
 
         function get_altitude_data() {
             MSP.send_message(MSPCodes.MSP_ALTITUDE, false, false, get_attitude_data);
-
         }
 
         function get_attitude_data() {
@@ -370,17 +369,17 @@ TABS.mission_control.initialize = function (callback) {
         mspHelper.getSetting("safehome_max_distance").then(function (s) {
             if (s) {
                 vMaxDistSH = Number(s.value)/100;
-                settings = { speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
+                settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
             }
             else {
                 vMaxDistSH = 0;
-                settings = { speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
+                settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
             }
         });
     }
     else {
         vMaxDistSH = 0;
-        settings = { speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
+        settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -438,7 +437,11 @@ TABS.mission_control.initialize = function (callback) {
         chrome.storage.local.get('missionPlannerSettings', function (result) {
             if (result.missionPlannerSettings) {
                 settings = result.missionPlannerSettings;
-            }
+            // CR4 can't reproduce now, maybe a config issue after flashing
+            } // else {
+                // settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
+            // }
+            // CR4
             refreshSettings();
         });
     }
@@ -667,7 +670,7 @@ TABS.mission_control.initialize = function (callback) {
             renderHomeOnMap();
         });
 
-        if (HOME.getLatMap() == 0 && HOME.getLonMap() == 0) {
+        if (!HOME.getLatMap() && !HOME.getLonMap()) {
             HOME.setAlt("N/A");
         } else {
             (async () => {
@@ -1017,7 +1020,6 @@ TABS.mission_control.initialize = function (callback) {
         vectorLayer.kind = "waypoint";
         vectorLayer.number = waypoint.getNumber();
         vectorLayer.layerNumber = waypoint.getLayerNumber();
-
         markers.push(vectorLayer);
 
         return vectorLayer;
@@ -1541,7 +1543,7 @@ TABS.mission_control.initialize = function (callback) {
          // * @param {Object=} opt_options Control options.
          // */
         app.PlannerMultiMissionControl = function (opt_options) {
-            
+
             var options = opt_options || {};
             var button = document.createElement('button');
 
@@ -1575,7 +1577,6 @@ TABS.mission_control.initialize = function (callback) {
             if (disableMarkerEdit) return false;
 
             var map = evt.map;
-
             var feature = map.forEachFeatureAtPixel(evt.pixel,
                 function (feature, layer) {
                     return feature;
@@ -1794,7 +1795,7 @@ TABS.mission_control.initialize = function (callback) {
                     selectedMarker = null;
                     selectedFeature = null;
                     tempMarker = null;
-                    clearEditForm();
+                    // clearEditForm();    // CR15 ?
                 } catch (e) {
                     console.log(e);
                     GUI.log(chrome.i18n.getMessage('notAWAYPOINT'));
@@ -1847,7 +1848,7 @@ TABS.mission_control.initialize = function (callback) {
                 $('#pointP1').val(selectedMarker.getP1());
                 $('#pointP2').val(selectedMarker.getP2());
 
-                
+
                 // Selection box update depending on choice of type of waypoint
                 for (var j in dictOfLabelParameterPoint[selectedMarker.getAction()]) {
                     if (dictOfLabelParameterPoint[selectedMarker.getAction()][j] != '') {
@@ -1897,7 +1898,7 @@ TABS.mission_control.initialize = function (callback) {
                 $('.home-lon').val(Math.round(coord[0] * 10000000) / 10000000);
                 $('.home-lat').val(Math.round(coord[1] * 10000000) / 10000000);
             }
-            else if (!disableMarkerEdit) {
+            else if (!disableMarkerEdit) {  // click on map to add new WP
                 let tempWpCoord = ol.proj.toLonLat(evt.coordinate);
                 let tempWp = new Waypoint(mission.get().length, MWNP.WPTYPE.WAYPOINT, Math.round(tempWpCoord[1] * 10000000), Math.round(tempWpCoord[0] * 10000000), alt=Number(settings.alt), p1=Number(settings.speed));
                 if (homeMarkers.length && HOME.getAlt() != "N/A") {
@@ -1918,6 +1919,7 @@ TABS.mission_control.initialize = function (callback) {
                 }
             }
             //mission.missionDisplayDebug();
+            if (selectedFeature && tempMarker.kind != "waypoint") clearEditForm();  // CR15
             updateMultimissionState();
         });
 
@@ -2114,7 +2116,7 @@ TABS.mission_control.initialize = function (callback) {
         $('#pointP3Alt').on('change', function (event) {
             if (selectedMarker) {
                 P3Value = selectedMarker.getP3();
-                
+
                 if (disableMarkerEdit) {
                     changeSwitchery($('#pointP3Alt'), TABS.mission_control.isBitSet(P3Value, MWNP.P3.ALT_TYPE));
                 }
@@ -2124,9 +2126,10 @@ TABS.mission_control.initialize = function (callback) {
                     const elevationAtWP = await selectedMarker.getElevation(globalSettings);
                     $('#elevationValueAtWP').text(elevationAtWP);
                     var altitude = Number($('#pointAlt').val());
+
                     if (P3Value != selectedMarker.getP3()) {
                         selectedMarker.setP3(P3Value);
-                        
+
                         if ($('#pointP3Alt').prop("checked")) {
                             if (altitude < 0) {
                                 altitude = settings.alt;
@@ -2158,7 +2161,6 @@ TABS.mission_control.initialize = function (callback) {
 
                 P3Value = TABS.mission_control.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_1, $('#pointP3UserAction1').prop("checked"));
                 selectedMarker.setP3(P3Value);
-    
                 mission.updateWaypoint(selectedMarker);
                 mission.update(singleMissionActive());
                 redrawLayer();
@@ -2185,7 +2187,7 @@ TABS.mission_control.initialize = function (callback) {
                 if (disableMarkerEdit) {
                     changeSwitchery($('#pointP3UserAction3'), TABS.mission_control.isBitSet(selectedMarker.getP3(), MWNP.P3.USER_ACTION_3));
                 }
-    
+
                 P3Value = TABS.mission_control.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_3, $('#pointP3UserAction3').prop("checked"));
                 selectedMarker.setP3(P3Value);
 
@@ -2200,7 +2202,7 @@ TABS.mission_control.initialize = function (callback) {
                 if (disableMarkerEdit) {
                     changeSwitchery($('#pointP3UserAction4'), TABS.mission_control.isBitSet(selectedMarker.getP3(), MWNP.P3.USER_ACTION_4));
                 }
-    
+
                 P3Value = TABS.mission_control.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_4, $('#pointP3UserAction4').prop("checked"));
                 selectedMarker.setP3(P3Value);
 
@@ -2631,7 +2633,7 @@ TABS.mission_control.initialize = function (callback) {
                 }
 
                 redrawLayers();
-                if (!(HOME.getLatMap() == 0 && HOME.getLonMap() == 0)) {
+                if (HOME.getLatMap() && HOME.getLonMap()) {
                     updateHome();
                 }
                 updateTotalInfo();
@@ -2648,6 +2650,7 @@ TABS.mission_control.initialize = function (callback) {
 
         var center = ol.proj.toLonLat(map.getView().getCenter());
         var zoom = map.getView().getZoom();
+
         let multimission = multimissionCount && !singleMissionActive();
         let version = multimission ? '4.0.0' : '2.3-pre8';
         var data = {
@@ -2675,20 +2678,19 @@ TABS.mission_control.initialize = function (callback) {
                         'lat': waypoint.getLatMap(),
                         'lon': waypoint.getLonMap(),
                         'alt': (waypoint.getAlt() / 100),
-                        'parameter1': (MWNP.WPTYPE.REV[waypoint.getAction()] == "JUMP" ? waypoint.getP1()+1 : waypoint.getP1()),
+                        'parameter1': (MWNP.WPTYPE.REV[waypoint.getAction()] == "JUMP" ? waypoint.getP1() + 1 : waypoint.getP1()),
                         'parameter2': waypoint.getP2(),
                         'parameter3': waypoint.getP3(),
                         'flag': waypoint.getEndMission(),
-                    } };
+                    }};
             data.missionitem.push(point);
-
             if (waypoint.getEndMission() == 0xA5) {
                 missionStartWPNumber = waypoint.getNumber() + 1;
                 missionNumber ++;
             }
         });
-
-        var builder = new window.xml2js.Builder({ 'rootName': 'mission', 'renderOpts': { 'pretty': true, 'indent': '\t', 'newline': '\n' } });
+        // var builder = new window.xml2js.Builder({ 'rootName': 'mission', 'renderOpts': { 'pretty': true, 'indent': '\t', 'newline': '\n', 'allowEmpty': true} });
+        var builder = new window.xml2js.Builder({ 'rootName': 'mission', 'renderOpts': { 'pretty': true, 'indent': '\t', 'newline': '\n'}});
         var xml = builder.buildObject(data);
         xml = xml.replace(/missionitem mission/g, 'meta mission');
         fs.writeFile(filename, xml, (err) => {
@@ -2726,6 +2728,8 @@ TABS.mission_control.initialize = function (callback) {
                     alert(chrome.i18n.getMessage('no_waypoints_to_load'));
                     return;
                 }
+                // alert(MISSION_PLANNER.getFirstWpIndex());
+                // alert(MISSION_PLANNER.getCountBusyPoints());
                 mission.reinit();
                 mission.copy(MISSION_PLANNER);
                 mission.update(false, true);
@@ -2733,6 +2737,15 @@ TABS.mission_control.initialize = function (callback) {
                 /* check multimissions */
                 multimissionCount = 0;
                 mission.get().forEach(function (element) {
+                    // alert("N°: " + element.getNumber() +
+                            // " Action: " + element.getAction()+
+                            // " Lon: "+ element.getLon()+
+                            // " Lat: "+ element.getLat()+
+                            // " Alt: "+ element.getAlt()+
+                            // " P1: "+ element.getP1()+
+                            // " P2: "+ element.getP2()+
+                            // " P3: "+ element.getP3()+
+                            // " EndMission: "+ element.getEndMission());
                     if (element.getEndMission() == 0xA5) {
                         multimissionCount ++;
                     }
@@ -2953,13 +2966,13 @@ TABS.mission_control.setBit = function(bits, bit, value) {
 
 // window.addEventListener("error", handleError, true);
 
-// function handleError(evt) {
-    // if (evt.message) { // Chrome sometimes provides this
-      // alert("error: "+evt.message +" at linenumber: "+evt.lineno+" of file: "+evt.filename);
-    // } else {
-      // alert("error: "+evt.type+" from element: "+(evt.srcElement || evt.target));
-    // }
-// }
+function handleError(evt) {
+    if (evt.message) { // Chrome sometimes provides this
+      alert("error: "+evt.message +" at linenumber: "+evt.lineno+" of file: "+evt.filename);
+    } else {
+      alert("error: "+evt.type+" from element: "+(evt.srcElement || evt.target));
+    }
+}
 
 TABS.mission_control.cleanup = function (callback) {
     if (callback) callback();
