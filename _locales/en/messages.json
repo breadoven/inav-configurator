@@ -2038,7 +2038,7 @@
         "message": "Magnetometer Alignment"
     },
     "magnetometerHelp": {
-        "message": "Adjust the magnetometer position until you get the same on the quad.<br/><strong>Note:</strong> If you have changed your flight controller alignment, make your adjustment relative to the FC position and not to the UAV position "
+        "message": "Adjust the magnetometer orientation to match physical orientation on the aircraft.<br/>If magnetometer is not BN-880, adjust according to \"compass direction\" arrow or axis markings on your magnetometer model.<br/><strong>Note:</strong> Magnetometer alignment is relative to FC. Make sure to align FC first (board_align_yaw, board_align_pitch, board_align_roll)."
     },
     "magnetometerOrientationPreset": {
         "message": "Orientation presets"
@@ -3419,6 +3419,54 @@
     "osd_home_position_arm_screen": {
         "message": "Home Position on Arming Screen"
     },
+    "osd_hud_settings": {
+        "message": "Heads up Display settings"
+    },
+    "osd_hud_settings_HELP": {
+        "message": "This section allows tweaking the behavior of HUD elements."
+    },
+    "osd_hud_radar_disp": {
+        "message": "Maximum number of radar elements on screen."
+    },
+    "osd_hud_radar_disp_help": {
+        "message": "This is used for INAV Radar/FormationFlight. 0 disables this feature."
+    },
+
+    "osd_hud_radar_range_min": {
+        "message": "Minimum radar range"
+    },
+    "osd_hud_radar_range_min_help": {
+        "message": "Radar aircrafts closer than this will not be displayed in the HUD."
+    },
+
+    "osd_hud_radar_range_max": {
+        "message": "Maximum radar range"
+    },
+    "osd_hud_radar_range_max_help": {
+        "message": "Radar aircrafts further away than this will not be displayed in the HUD."
+    },
+
+
+    "osd_hud_wp_disp": {
+        "message": "Maximum number of waypoint elements on screen."
+    },
+    "osd_hud_wp_disp_help": {
+        "message": "Number of Wayponts to show on screen. 0 disables this feature."
+    },
+    "osd_camera_fov_h": {
+        "message": "Camera Horizontal FOV"
+    },
+    "osd_camera_fov_h_help": {
+        "message": "Camera Horizontal Field of View in Degrees. It is used to calculate the position of elements in the HUD display."
+    },
+    "osd_camera_fov_v": {
+        "message": "Camera Vertical FOV"
+    },
+    "osd_camera_fov_v_help": {
+        "message": "Camera Vertical Field of View in Degrees. It is used to calculate the position of elements in the HUD display."
+    },
+
+
     "osd_alarms": {
         "message": "Alarms"
     },
