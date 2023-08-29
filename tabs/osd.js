@@ -1404,18 +1404,6 @@ OSD.constants = {
                 },
             ]
         },
-        // CR1
-        {
-            name: 'osdGroupInfoReporting',
-            items: [
-                {
-                    name: 'INFO CYCLE',
-                    id: 145,
-                    preview: 'INFO   CYCLE'
-                },
-            ]
-        },
-        // CR1
         {
             name: 'osdGroupGPS',
             enabled: function() {
