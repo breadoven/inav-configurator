@@ -112,9 +112,13 @@ SYM.GLIDE_RANGE = 0xD4;
 SYM.FLIGHT_MINS_REMAINING = 0xDA;
 SYM.FLIGHT_DIST_REMAINING = 0x167;
 SYM.GROUND_COURSE = 0xDC;
-SYM.ALERT = 0xDD;           // CR88
+SYM.ALERT = 0xDD;
 SYM.CROSS_TRACK_ERROR = 0xFC;
 SYM.PAN_SERVO_IS_OFFSET_L = 0x1C7;
+SYM.ODOMETER = 0X168;
+SYM.PILOT_LOGO_SML_L = 0x1D5;
+SYM.PILOT_LOGO_SML_C = 0x1D6;
+SYM.PILOT_LOGO_SML_R = 0x1D7;
 
 SYM.AH_AIRCRAFT0 = 0x1A2;
 SYM.AH_AIRCRAFT1 = 0x1A3;
@@ -424,9 +428,11 @@ function osdMainBatteryPreview() {
     return FONT.symbol(SYM.BATT) + FONT.embed_dot(s);
 }
 
-function osdmAhdrawnPreview() {
-    let precision = Settings.getInputValue('osd_mah_used_precision');
-    let preview = "1215075".substring(0, precision);
+function osdmAhPrecisionPreview() {
+    let precision = Settings.getInputValue('osd_mah_precision');
+    let rnd = (Math.floor(10000000000000 + Math.random() * 90000000000000)).toString();
+    rnd = rnd.replace('0', '');
+    let preview = rnd.substring(0, precision);
 
     return preview + FONT.symbol(SYM.MAH);
 }
@@ -840,7 +846,6 @@ OSD.constants = {
                 {
                     name: 'THROTTLE_POSITION',
                     id: 9,
-
                     preview: ' ' + FONT.symbol(SYM.THR) + ' 69'
                 },
                 {
@@ -857,6 +862,11 @@ OSD.constants = {
                     name: 'PILOT_NAME',
                     id: 142,
                     preview: '[PILOT_NAME]'
+                },
+                {
+                    name: 'PILOT_LOGO',
+                    id: 146,
+                    preview: FONT.symbol(SYM.PILOT_LOGO_SML_L) + FONT.symbol(SYM.PILOT_LOGO_SML_C) + FONT.symbol(SYM.PILOT_LOGO_SML_R)
                 },
                 {
                     name: 'FLYMODE',
@@ -999,12 +1009,12 @@ OSD.constants = {
                     min_version: '3.0.0',
                     preview: 'INAV 2.7.0'
                 },
-                { // CR88
+                {
                     name: 'MULTI FUNCTION STATUS',
                     id: 144,
                     min_version: '6.0.0',
                     preview: '0 WARNINGS'
-                } // CR88
+                }
             ]
         },
         {
@@ -1313,7 +1323,7 @@ OSD.constants = {
                     name: 'MAH_DRAWN',
                     id: 12,
                     preview: function() {
-                        return osdmAhdrawnPreview();
+                        return osdmAhPrecisionPreview();
                     }
                 },
                 {
@@ -1334,7 +1344,7 @@ OSD.constants = {
                     name: 'MAIN_BATT_REMAINING_CAPACITY',
                     id: 37,
                     preview: function() {
-                        return '1276' + FONT.symbol(SYM.MAH); // 4 chars
+                        return osdmAhPrecisionPreview();
                     }
                 },
                 {
@@ -1560,6 +1570,22 @@ OSD.constants = {
                                 return FONT.symbol(SYM.TRIP_DIST) + FONT.embed_dot('0.85') + FONT.symbol(SYM.DIST_NM);
                             default: // Metric
                                 return FONT.symbol(SYM.TRIP_DIST) + FONT.embed_dot('1.57') + FONT.symbol(SYM.DIST_KM);
+                        }
+                    }
+                },
+                {
+                    name: 'ODOMETER',
+                    id: 145,
+                    min_version: '6.1.0',
+                    preview: function(osd_data) {
+                        switch (OSD.data.preferences.units) {
+                            case 0: // Imperial
+                            case 3: // UK
+                                return FONT.symbol(SYM.ODOMETER) + FONT.embed_dot('00016.9') + FONT.symbol(SYM.DIST_MI);
+                            case 4: // GA
+                                return FONT.symbol(SYM.ODOMETER) + FONT.embed_dot('00014.7') + FONT.symbol(SYM.DIST_NM);
+                            default: // Metric
+                                return FONT.symbol(SYM.ODOMETER) + FONT.embed_dot('00027.2') + FONT.symbol(SYM.DIST_KM);
                         }
                     }
                 },
