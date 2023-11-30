@@ -2130,13 +2130,21 @@ TABS.mission_control.initialize = function (callback) {
                     if (P3Value != selectedMarker.getP3()) {
                         selectedMarker.setP3(P3Value);
 
+                        let groundClearance = 100 * Number($('#groundClearanceValueAtWP').text());
+                        if (isNaN(groundClearance)) {
+                            groundClearance = settings.alt;
+                        }
+
                         if ($('#pointP3Alt').prop("checked")) {
-                            if (altitude < 0) {
-                                altitude = settings.alt;
-                            }
-                            selectedMarker.setAlt(altitude + elevationAtWP * 100);
+                            // CR20
+                            selectedMarker.setAlt(groundClearance + elevationAtWP * 100);
                         } else {
-                            selectedMarker.setAlt(altitude - Number(elevationAtWP) * 100);
+                            let elevationAtHome = HOME.getAlt();
+                            if (isNaN(elevationAtHome)) {
+                                elevationAtHome = elevationAtWP;
+                            }
+                            selectedMarker.setAlt(groundClearance + 100 * (elevationAtWP - elevationAtHome));
+                            // CR20
                         }
                     }
                     const returnAltitude = checkAltElevSanity(false, selectedMarker.getAlt(), elevationAtWP, selectedMarker.getP3());
@@ -2846,7 +2854,13 @@ TABS.mission_control.initialize = function (callback) {
                     alert(chrome.i18n.getMessage('MissionPlannerAltitudeChangeReset'));
                     altitude = selectedMarker.getAlt();
                 } else {
-                    altitude = settings.alt + 100 * (elevation - elevationAtHome);
+                    // CR20
+                    let groundClearanceTemp = 100 * Number($('#groundClearanceValueAtWP').text());
+                    if (isNaN(groundClearanceTemp) || selectedMarker == null) {
+                        groundClearanceTemp = settings.alt;
+                    }
+                    altitude = groundClearanceTemp + 100 * (elevation - elevationAtHome);
+                    // CR20
                 }
             }
             groundClearance = altitude / 100 + (elevationAtHome - elevation);
