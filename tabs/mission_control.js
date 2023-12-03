@@ -310,7 +310,7 @@ TABS.mission_control.initialize = function (callback) {
                 rthUpdateInterval = 0;
               }
               rthUpdateInterval++;
-          }
+           }
         }
 
         /*
@@ -363,25 +363,17 @@ TABS.mission_control.initialize = function (callback) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     //      define & init parameters for default Settings
     //////////////////////////////////////////////////////////////////////////////////////////////
-    var vMaxDistSH = 0;
-    var settings = {};
+    // CR21
+    var settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : 0, bingDemModel : false};
+
     if (CONFIGURATOR.connectionValid) {
         mspHelper.getSetting("safehome_max_distance").then(function (s) {
             if (s) {
-                vMaxDistSH = Number(s.value)/100;
-                settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
-            }
-            else {
-                vMaxDistSH = 0;
-                settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
+                settings.maxDistSH = Number(s.value) / 100;
             }
         });
     }
-    else {
-        vMaxDistSH = 0;
-        settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
-    }
-
+    // CR21
     //////////////////////////////////////////////////////////////////////////////////////////////
     //      define & init Waypoints parameters
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -437,11 +429,7 @@ TABS.mission_control.initialize = function (callback) {
         chrome.storage.local.get('missionPlannerSettings', function (result) {
             if (result.missionPlannerSettings) {
                 settings = result.missionPlannerSettings;
-            // CR4 can't reproduce now, maybe a config issue after flashing
-            } // else {
-                // settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : vMaxDistSH};
-            // }
-            // CR4
+            }
             refreshSettings();
         });
     }
@@ -682,6 +670,7 @@ TABS.mission_control.initialize = function (callback) {
 
         if (globalSettings.mapProviderType == 'bing') {
             $('#elevationEarthModelclass').fadeIn(300);
+            changeSwitchery($('#elevationEarthModel'), settings.bingDemModel);   // CR21
         } else {
             $('#elevationEarthModelclass').fadeOut(300);
         }
@@ -2328,6 +2317,9 @@ TABS.mission_control.initialize = function (callback) {
                     redrawLayer();
                     plotElevation();
                 })()
+
+                settings.bingDemModel = $('#elevationEarthModel').prop("checked") ? true : false; // CR21
+                saveSettings();  // CR21
             }
         });
 
@@ -2479,7 +2471,11 @@ TABS.mission_control.initialize = function (callback) {
         /////////////////////////////////////////////
         $('#saveSettings').on('click', function () {
             let oldSafeRadiusSH = settings.safeRadiusSH;
-            settings = { speed: Number($('#MPdefaultPointSpeed').val()), alt: Number($('#MPdefaultPointAlt').val()), safeRadiusSH: Number($('#MPdefaultSafeRangeSH').val()), maxDistSH : vMaxDistSH};
+            // CR21
+            settings.speed = Number($('#MPdefaultPointSpeed').val());
+            settings.alt = Number($('#MPdefaultPointAlt').val());
+            settings.safeRadiusSH = Number($('#MPdefaultSafeRangeSH').val());
+            // CR21
             saveSettings();
             if (settings.safeRadiusSH != oldSafeRadiusSH  && $('#showHideSafehomeButton').is(":visible")) {
                 cleanSafehomeLayers();
