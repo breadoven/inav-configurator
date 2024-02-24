@@ -363,17 +363,16 @@ TABS.mission_control.initialize = function (callback) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     //      define & init parameters for default Settings
     //////////////////////////////////////////////////////////////////////////////////////////////
-    // CR21
     var settings = {speed: 0, alt: 5000, safeRadiusSH : 50, maxDistSH : 0, bingDemModel : false};
 
     if (CONFIGURATOR.connectionValid) {
         mspHelper.getSetting("safehome_max_distance").then(function (s) {
             if (s) {
-                settings.maxDistSH = Number(s.value) / 100;
+                settings.maxDistSH = Number(s.value)/100;
             }
         });
     }
-    // CR21
+
     //////////////////////////////////////////////////////////////////////////////////////////////
     //      define & init Waypoints parameters
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -670,7 +669,7 @@ TABS.mission_control.initialize = function (callback) {
 
         if (globalSettings.mapProviderType == 'bing') {
             $('#elevationEarthModelclass').fadeIn(300);
-            changeSwitchery($('#elevationEarthModel'), settings.bingDemModel);   // CR21
+            changeSwitchery($('#elevationEarthModel'), settings.bingDemModel);
         } else {
             $('#elevationEarthModelclass').fadeOut(300);
         }
@@ -2121,11 +2120,10 @@ TABS.mission_control.initialize = function (callback) {
 
                         let groundClearance = 100 * Number($('#groundClearanceValueAtWP').text());
                         if (isNaN(groundClearance)) {
-                            groundClearance = settings.alt;
+                            groundClearance = settings.alt; // use default altitude if no current ground clearance
                         }
 
                         if ($('#pointP3Alt').prop("checked")) {
-                            // CR20
                             selectedMarker.setAlt(groundClearance + elevationAtWP * 100);
                         } else {
                             let elevationAtHome = HOME.getAlt();
@@ -2133,9 +2131,9 @@ TABS.mission_control.initialize = function (callback) {
                                 elevationAtHome = elevationAtWP;
                             }
                             selectedMarker.setAlt(groundClearance + 100 * (elevationAtWP - elevationAtHome));
-                            // CR20
                         }
                     }
+
                     const returnAltitude = checkAltElevSanity(false, selectedMarker.getAlt(), elevationAtWP, selectedMarker.getP3());
                     selectedMarker.setAlt(returnAltitude);
                     $('#pointAlt').val(selectedMarker.getAlt());
@@ -2318,8 +2316,8 @@ TABS.mission_control.initialize = function (callback) {
                     plotElevation();
                 })()
 
-                settings.bingDemModel = $('#elevationEarthModel').prop("checked") ? true : false; // CR21
-                saveSettings();  // CR21
+                settings.bingDemModel = $('#elevationEarthModel').prop("checked") ? true : false;
+                saveSettings();
             }
         });
 
@@ -2471,17 +2469,19 @@ TABS.mission_control.initialize = function (callback) {
         /////////////////////////////////////////////
         $('#saveSettings').on('click', function () {
             let oldSafeRadiusSH = settings.safeRadiusSH;
-            // CR21
+
             settings.speed = Number($('#MPdefaultPointSpeed').val());
             settings.alt = Number($('#MPdefaultPointAlt').val());
             settings.safeRadiusSH = Number($('#MPdefaultSafeRangeSH').val());
-            // CR21
+
             saveSettings();
+
             if (settings.safeRadiusSH != oldSafeRadiusSH  && $('#showHideSafehomeButton').is(":visible")) {
                 cleanSafehomeLayers();
                 renderSafehomesOnMap();
                 $('#SafeHomeSafeDistance').text(settings.safeRadiusSH);
             }
+
             closeSettingsPanel();
         });
 
@@ -2850,13 +2850,11 @@ TABS.mission_control.initialize = function (callback) {
                     alert(chrome.i18n.getMessage('MissionPlannerAltitudeChangeReset'));
                     altitude = selectedMarker.getAlt();
                 } else {
-                    // CR20
-                    let groundClearanceTemp = 100 * Number($('#groundClearanceValueAtWP').text());
-                    if (isNaN(groundClearanceTemp) || selectedMarker == null) {
-                        groundClearanceTemp = settings.alt;
+                    let currentGroundClearance = 100 * Number($('#groundClearanceValueAtWP').text());
+                    if (isNaN(currentGroundClearance) || selectedMarker == null) {
+                        currentGroundClearance = settings.alt;  // use default altitude if no current ground clearance
                     }
-                    altitude = groundClearanceTemp + 100 * (elevation - elevationAtHome);
-                    // CR20
+                    altitude = currentGroundClearance + 100 * (elevation - elevationAtHome);
                 }
             }
             groundClearance = altitude / 100 + (elevationAtHome - elevation);
