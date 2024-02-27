@@ -69,10 +69,7 @@ TABS.setup.initialize = function (callback) {
                     GUI.log(chrome.i18n.getMessage('initialSetupSettingsRestored'));
     
                     GUI.tab_switch_cleanup(function () {
-                        MSP.send_message(MSPCodes.MSP_SET_REBOOT, false, false, function() {
-                            GUI.log(chrome.i18n.getMessage('deviceRebooting'));
-                            GUI.handleReconnect();
-                        });
+                        TABS.setup.initialize();
                     });
                 });
             }
@@ -306,7 +303,7 @@ TABS.setup.initialize3D = function () {
         camera.aspect = wrapper.width() / wrapper.height();
         camera.updateProjectionMatrix();
 
-        this.render3D();
+        self.render3D();
     };
 
     $(window).on('resize', this.resize3D);
