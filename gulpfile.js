@@ -139,9 +139,7 @@ sources.js = [
     './js/libraries/plotly-latest.min.js',
     './js/sitl.js',
     './js/CliAutoComplete.js',
-    './node_modules/jquery-textcomplete/dist/jquery.textcomplete.js',
-    './js/fwApproach.js',
-    './js/fwApproachCollection.js'
+    './node_modules/jquery-textcomplete/dist/jquery.textcomplete.js'
 ];
 
 sources.receiverCss = [
@@ -408,39 +406,18 @@ gulp.task('release-osx64', function(done) {
         archive.directory(src, 'INAV Configurator.app');
         output.on('close', function() {
             if (getArguments().notarize) {
-                console.log('Notarizing ZIP file: ' + zipFilename);
-                const notarizeArgs = ['xcrun', 'notarytool', 'submit'];
-                notarizeArgs.push(zipFilename);
+                console.log('Notarizing DMG file: ' + zipFilename);
+                const notarizeArgs = ['macapptool', '-v', '1', 'notarize'];
                 const notarizationUsername = getArguments()['notarization-username'];
                 if (notarizationUsername) {
-                    notarizeArgs.push('--apple-id', notarizationUsername)
-                } else {
-                    throw new Error('Missing notarization username');
+                    notarizeArgs.push('-u', notarizationUsername)
                 }
                 const notarizationPassword = getArguments()['notarization-password'];
                 if (notarizationPassword) {
-                    notarizeArgs.push('--password', notarizationPassword)
-                } else {
-                    throw new Error('Missing notarization password');
+                    notarizeArgs.push('-p', notarizationPassword)
                 }
-                const notarizationTeamId = getArguments()['notarization-team-id'];
-                if (notarizationTeamId) {
-                    notarizeArgs.push('--team-id', notarizationTeamId)
-                } else {
-                    throw new Error('Missing notarization Team ID');
-                }
-                notarizeArgs.push('--wait');
-
-                const notarizationWebhook = getArguments()['notarization-webhook'];
-                if (notarizationWebhook) {
-                    notarizeArgs.push('--webhook', notarizationWebhook);
-                }
+                notarizeArgs.push(zipFilename)
                 execSync.apply(this, notarizeArgs);
-
-                console.log('Stapling ZIP file: ' + zipFilename);
-                const stapleArgs = ['macapptool', '-v', '1', 'staple'];
-                stapleArgs.push(zipFilename)
-                execSync.apply(this, stapleArgs);
             }
             done();
         });

@@ -641,17 +641,25 @@ TABS.mixer.initialize = function (callback, scrollPosition) {
         });
 
         const updateMotorDirection = function () {
-            let motorDirectionCheckbox = $('input[name=motor_direction_inverted]:checked');
-            const isReversed = motorDirectionCheckbox.val() == 1 && (MIXER_CONFIG.platformType == PLATFORM_MULTIROTOR || MIXER_CONFIG.platformType == PLATFORM_TRICOPTER);
+            let motorDirectionCheckbox = $("#motor_direction_inverted");
+            const isReversed = motorDirectionCheckbox.is(":checked") && (MIXER_CONFIG.platformType == PLATFORM_MULTIROTOR || MIXER_CONFIG.platformType == PLATFORM_TRICOPTER);
 
             const path = './resources/motor_order/'
                 + currentMixerPreset.image + (isReversed ? "_reverse" : "") + '.svg';
             $('.mixerPreview img').attr('src', path);
 
+            if (MIXER_CONFIG.platformType == PLATFORM_MULTIROTOR || MIXER_CONFIG.platformType == PLATFORM_TRICOPTER) {
+                if (isReversed) {
+                    motorDirectionCheckbox.parent().find("label span").html(chrome.i18n.getMessage("motor_direction_isInverted"));
+                } else {
+                    motorDirectionCheckbox.parent().find("label span").html(chrome.i18n.getMessage("motor_direction_inverted"));
+                }
+            }
+
             renderServoOutputImage();
         };
 
-        $("input[name=motor_direction_inverted]").change(updateMotorDirection);
+        $("#motor_direction_inverted").change(updateMotorDirection);
 
         $platformSelect.find("*").remove();
 

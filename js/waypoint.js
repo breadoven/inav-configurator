@@ -1,7 +1,7 @@
 /*global $*/
 'use strict';
 
-let Waypoint = function (number, action, lat, lon, alt=0, p1=0, p2=0, p3=0, endMission=0, isUsed=true, isAttached=false, attachedId="", multiMissionIdx = 0) {
+let Waypoint = function (number, action, lat, lon, alt=0, p1=0, p2=0, p3=0, endMission=0, isUsed=true, isAttached=false, attachedId="") {
 
     var self = {};
     let layerNumber = "undefined";
@@ -135,14 +135,6 @@ let Waypoint = function (number, action, lat, lon, alt=0, p1=0, p2=0, p3=0, endM
     self.setAttachedNumber = function (data) {
         attachedNumber = data;
     };
-
-    self.setMultiMissionIdx = function(data) {
-        multiMissionIdx = data;
-    }
-
-    self.getMultiMissionIdx = function() {
-        return multiMissionIdx;
-    }
 
     self.getElevation = async function (globalSettings) {
         let elevation = "N/A";
