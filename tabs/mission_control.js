@@ -81,7 +81,7 @@ TABS.mission_control.initialize = function (callback) {
     var textGeom;
     let isOffline = false;
     let rthUpdateInterval = 0;
-    let settings = {speed: 0, alt: 5000, safeRadiusSH: 50, fwApproachAlt: 60, fwLandAlt: 5, maxDistSH: 0, fwApproachLength: 0, fwLoiterRadius: 0, bingDemModel: false};
+    let settings = {speed: 0, alt: 5000, safeRadiusSH: 50, fwApproachAlt: 60, fwLandAlt: 5, maxDistSH: 0, fwApproachLength: 0, fwLoiterRadius: 0, bingDemModel: false};  // CR22
 
     if (GUI.active_tab != 'mission_control') {
         GUI.active_tab = 'mission_control';
@@ -150,14 +150,14 @@ TABS.mission_control.initialize = function (callback) {
 
         if (typeof require !== "undefined") {
             loadSettings();
-                    alert("applen_load " + settings.fwApproachLength);
-                    alert("maxdistsh_load " + settings.maxDistSH);
+                    // alert("applen_load " + settings.fwApproachLength);
+                    // alert("maxdistsh_load " + settings.maxDistSH);
             // let the dom load finish, avoiding the resizing of the map
             setTimeout(initMap, 200);
             if (!isOffline) {
                 setTimeout(() => {
-                    alert("applen_init " + settings.fwApproachLength);
-                    alert("maxdistsh_init " + settings.maxDistSH);
+                    // alert("applen_init " + settings.fwApproachLength);
+                    // alert("maxdistsh_init " + settings.maxDistSH);
                     if (SAFEHOMES.safehomeCount() >= 1) {
                         updateSelectedShAndFwAp(0);
                     } else {
@@ -471,17 +471,19 @@ TABS.mission_control.initialize = function (callback) {
     function loadSettings() {
         chrome.storage.local.get('missionPlannerSettings', function (result) {
             if (result.missionPlannerSettings) {
+                // CR22
                 if (result.missionPlannerSettings.fwApproachLength == undefined && settings.fwApproachLength) {
                     result.missionPlannerSettings.fwApproachLength = settings.fwApproachLength;
                     result.missionPlannerSettings.maxDistSH = settings.maxDistSH;
                     result.missionPlannerSettings.fwLoiterRadius = settings.fwLoiterRadius;
                 }
+                // CR22
                 settings = result.missionPlannerSettings;
-                saveSettings();
+                saveSettings();  // CR22
             }
-                    alert("applen_loadset result " + result.missionPlannerSettings.fwApproachLength);
-                    alert("applen_loadset " + settings.fwApproachLength);
-                    alert("maxdistsh_loadset " + settings.maxDistSH);
+                    // alert("applen_loadset result " + result.missionPlannerSettings.fwApproachLength);
+                    // alert("applen_loadset " + settings.fwApproachLength);
+                    // alert("maxdistsh_loadset " + settings.maxDistSH);
             refreshSettings();
         });
     }
@@ -2025,7 +2027,7 @@ TABS.mission_control.initialize = function (callback) {
                     selectedMarker = null;
                     selectedFeature = null;
                     tempMarker = null;
-                    clearEditForm();
+                    // clearEditForm();  // CR15
                 } catch (e) {
                     console.log(e);
                     GUI.log(chrome.i18n.getMessage('notAWAYPOINT'));
@@ -2201,6 +2203,7 @@ TABS.mission_control.initialize = function (callback) {
                 }
             }
             //mission.missionDisplayDebug();
+            if (selectedFeature && tempMarker.kind != "waypoint") clearEditForm();  // CR15
             updateMultimissionState();
         });
 
@@ -2437,13 +2440,17 @@ TABS.mission_control.initialize = function (callback) {
                         if (isNaN(groundClearance)) {
                             groundClearance = settings.alt; // use default altitude if no current ground clearance
                         }
-
+                        // CR22
                         if ($('#pointP3Alt').prop("checked")) {
                             selectedMarker.setAlt(groundClearance + elevationAtWP * 100);
                         } else {
-                            selectedMarker.setAlt(altitude - Number(elevationAtWP) * 100);
+                            let elevationAtHome = HOME.getAlt();
+                            if (isNaN(elevationAtHome)) {
+                                elevationAtHome = elevationAtWP;
+                            }
+                            selectedMarker.setAlt(groundClearance + 100 * (elevationAtWP - elevationAtHome));
                         }
-
+                        // CR22
                         if (selectedMarker.getAction() == MWNP.WPTYPE.LAND && selectedFwApproachWp && selectedFwApproachWp.getIsSeaLevelRef() != $('#pointP3Alt').prop("checked")) {
 
                             let oldElevation = 0;
@@ -2463,7 +2470,6 @@ TABS.mission_control.initialize = function (callback) {
                             $('#wpApproachAlt').val(selectedFwApproachWp.getApproachAltAsl());
                             $('#wpLandAlt').val(selectedFwApproachWp.getLandAltAsl());
                         }
-
                     }
 
                     const returnAltitude = checkAltElevSanity(false, selectedMarker.getAlt(), elevationAtWP, selectedMarker.getP3());
@@ -3130,9 +3136,8 @@ TABS.mission_control.initialize = function (callback) {
         // Callback for settings
         /////////////////////////////////////////////
         $('#saveSettings').on('click', function () {
-            alert("save settings click");
             let oldSafeRadiusSH = settings.safeRadiusSH;
-            settings = { speed: Number($('#MPdefaultPointSpeed').val()), alt: Number($('#MPdefaultPointAlt').val()), safeRadiusSH: Number($('#MPdefaultSafeRangeSH').val()), fwApproachAlt: Number($('#MPdefaultFwApproachAlt').val()), fwLandAlt: Number($('#MPdefaultLandAlt').val()), fwApproachLength: settings.fwApproachLength, maxDistSH: settings.maxDistSH, fwLoiterRadius: settings.fwLoiterRadius, bingDemModel: settings.bingDemModel};
+            settings = { speed: Number($('#MPdefaultPointSpeed').val()), alt: Number($('#MPdefaultPointAlt').val()), safeRadiusSH: Number($('#MPdefaultSafeRangeSH').val()), fwApproachAlt: Number($('#MPdefaultFwApproachAlt').val()), fwLandAlt: Number($('#MPdefaultLandAlt').val()), fwApproachLength: settings.fwApproachLength, maxDistSH: settings.maxDistSH, fwLoiterRadius: settings.fwLoiterRadius, bingDemModel: settings.bingDemModel};   // CR22
 
             saveSettings();
 
@@ -3551,14 +3556,14 @@ TABS.mission_control.initialize = function (callback) {
         AbsAltCheck = (typeof AbsAltCheck == "boolean") ? AbsAltCheck : TABS.mission_control.isBitSet(AbsAltCheck, MWNP.P3.ALT_TYPE);
 
         if (AbsAltCheck) {
-            //if (checkAltitude < 100 * elevation) {
+            if (checkAltitude < 100 * elevation) {  // CR22
                 if (resetAltitude) {
                     alert(chrome.i18n.getMessage('MissionPlannerAltitudeChangeReset'));
                     altitude = selectedMarker.getAlt();
                 } else {
                     altitude = settings.alt + 100 * elevation;
                 }
-            //}
+            }  // CR22
             groundClearance = altitude / 100 - elevation;
         } else if (homeMarkers.length && HOME.getAlt() != "N/A") {
             let elevationAtHome = HOME.getAlt();
