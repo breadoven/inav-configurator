@@ -1,5 +1,7 @@
 'use strict';
 
+const { parseBooleans } = require('xml2js/lib/processors');
+
 ////////////////////////////////////
 //
 // global Parameters definition
@@ -472,7 +474,7 @@ TABS.mission_control.initialize = function (callback) {
         chrome.storage.local.get('missionPlannerSettings', function (result) {
             if (result.missionPlannerSettings) {
                 // CR22
-                if (result.missionPlannerSettings.fwApproachLength == undefined && settings.fwApproachLength) {
+                if (!result.missionPlannerSettings.fwApproachLength && settings.fwApproachLength) {
                     result.missionPlannerSettings.fwApproachLength = settings.fwApproachLength;
                     result.missionPlannerSettings.maxDistSH = settings.maxDistSH;
                     result.missionPlannerSettings.fwLoiterRadius = settings.fwLoiterRadius;
@@ -3137,8 +3139,14 @@ TABS.mission_control.initialize = function (callback) {
         /////////////////////////////////////////////
         $('#saveSettings').on('click', function () {
             let oldSafeRadiusSH = settings.safeRadiusSH;
-            settings = { speed: Number($('#MPdefaultPointSpeed').val()), alt: Number($('#MPdefaultPointAlt').val()), safeRadiusSH: Number($('#MPdefaultSafeRangeSH').val()), fwApproachAlt: Number($('#MPdefaultFwApproachAlt').val()), fwLandAlt: Number($('#MPdefaultLandAlt').val()), fwApproachLength: settings.fwApproachLength, maxDistSH: settings.maxDistSH, fwLoiterRadius: settings.fwLoiterRadius, bingDemModel: settings.bingDemModel};   // CR22
-
+            // CR22
+            // update default settings
+            settings.alt = Number($('#MPdefaultPointAlt').val());
+            settings.speed = Number($('#MPdefaultPointSpeed').val());
+            settings.safeRadiusSH = Number($('#MPdefaultSafeRangeSH').val());
+            settings.fwApproachAlt = Number($('#MPdefaultFwApproachAlt').val());
+            settings.fwLandAlt = Number($('#MPdefaultLandAlt').val());
+            // CR22
             saveSettings();
 
             if (settings.safeRadiusSH != oldSafeRadiusSH  && $('#showHideSafehomeButton').is(":visible")) {
@@ -3406,7 +3414,7 @@ TABS.mission_control.initialize = function (callback) {
                     'landheading2': approach.getLandHeading2(),
                     'sealevel-ref': approach.getIsSeaLevelRef() ? 'true' : 'false'
                 }};
-                data.fw_approach.push(item);
+                data.fwapproach.push(item);
             }
             approachIdx++;
         }
