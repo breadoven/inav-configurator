@@ -87,7 +87,7 @@ let FwApproach = function (number, approachAltAsl = 0, landAltAsl = 0, approachD
     self.getElevationFromServer = async function (lon, lat, globalSettings) {
         let elevation = "N/A";
         if (globalSettings.mapProviderType == 'bing') {
-            let elevationEarthModel = $('#elevationEarthModel').prop("checked") ? "ellipsoid" : "sealevel"; // CR22
+            let elevationEarthModel = $('#elevationEarthModel').prop("checked") ? "ellipsoid" : "sealevel";
 
             const response = await fetch('http://dev.virtualearth.net/REST/v1/Elevation/List?points='+lat+','+lon+'&heights='+elevationEarthModel+'&key='+globalSettings.mapApiKey);
             const myJson = await response.json();
