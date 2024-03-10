@@ -135,18 +135,9 @@ $(document).ready(function () {
                 } else {
                     win.height = result.windowSize.height;
                     win.width = result.windowSize.width;
-                    win.x = result.windowSize.x;
-                    win.y = result.windowSize.y;
+                    win.x = Math.max(result.windowSize.x, window.screen.availLeft);
+                    win.y = Math.max(result.windowSize.y, window.screen.availTop);
                 }
-
-                // if (result.windowSize.height <= window.screen.availHeight)
-                    // win.height = result.windowSize.height;
-                // if (result.windowSize.width <= window.screen.availWidth)
-                    // win.width = result.windowSize.width;
-                // if (result.windowSize.x >= window.screen.availLeft)
-                    // win.x = result.windowSize.x;
-                // if (result.windowSize.y >= window.screen.availTop)
-                    // win.y = result.windowSize.y;
             }
         });
 
