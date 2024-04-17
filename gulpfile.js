@@ -55,6 +55,7 @@ sources.css = [
     './node_modules/openlayers/dist/ol.css',
     './src/css/logic.css',
     './src/css/defaults_dialog.css',
+    './src/css/groundstation.css',
 ];
 
 sources.js = [
@@ -86,6 +87,7 @@ sources.js = [
     './js/simple_smooth_filter.js',
     './js/walking_average_filter.js',
     './js/gui.js',
+    './js/serialPortHelper.js',
     './js/msp/MSPCodes.js',
     './js/msp/MSPHelper.js',
     './js/msp/MSPchainer.js',
@@ -126,7 +128,6 @@ sources.js = [
     './js/serial_queue.js',
     './js/msp_balanced_interval.js',
     './tabs/advanced_tuning.js',
-    './tabs/ez_tune.js',
     './js/peripherals.js',
     './js/appUpdater.js',
     './js/feature_framework.js',
@@ -141,7 +142,9 @@ sources.js = [
     './js/CliAutoComplete.js',
     './node_modules/jquery-textcomplete/dist/jquery.textcomplete.js',
     './js/fwApproach.js',
-    './js/fwApproachCollection.js'
+    './js/fwApproachCollection.js',
+    './js/ltmDecoder.js',
+    './js/groundstation.js'
 ];
 
 sources.receiverCss = [
@@ -606,7 +609,7 @@ function release_deb(arch) {
                     `xdg-desktop-menu install ${LINUX_INSTALL_DIR}/${metadata.name}/${metadata.name}.desktop`,
                 ],
                 prerm: [`xdg-desktop-menu uninstall ${metadata.name}.desktop`],
-                depends: ['libgconf-2-4', 'libatomic1'],
+                depends: ['libatomic1'],
                 changelog: [],
                 _target: `${LINUX_INSTALL_DIR}/${metadata.name}`,
                 _out: appsDir,

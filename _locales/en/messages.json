@@ -84,7 +84,7 @@
         "message": "Documentation & Support"
     },
     "tabSetup": {
-        "message": "Setup"
+        "message": "Status"
     },
     "tabCalibration": {
         "message": "Calibration"
@@ -96,7 +96,7 @@
         "message": "Ports"
     },
     "tabPidTuning": {
-        "message": "PID tuning"
+        "message": "Tuning"
     },
     "tabReceiver": {
         "message": "Receiver"
@@ -1311,6 +1311,12 @@
     "pidTuning_ShowAllPIDs": {
         "message": "Show all PIDs"
     },
+    "pidTuning_PIDmain": {
+        "message": "Main PID gains"
+    },
+    "pidTuning_PIDother": {
+        "message": "Additional PID gains"
+    },
     "pidTuning_SelectNewDefaults": {
         "message": "Select New Defaults"
     },
@@ -1549,7 +1555,7 @@
         "message": "TPA smoothing and delay time constant to reflect non-instant speed/throttle response of the plane."
     },
     "pidTuning_fwLevelTrimMechanics": {
-        "message": "Fixed Wing Level Trim"
+        "message": "Fixed Wing mechanics"
     },
     "pidTuning_fw_level_pitch_trim": {
         "message": "Level Trim [deg]"
@@ -2057,6 +2063,12 @@
     },
     "gpsSignalStr": {
         "message": "Signal Strength"
+    },
+    "gpsPort": {
+        "message": "Serial Port"
+    },
+    "gpsBaud": {
+        "message": "Baud Rate"
     },
     "magnetometerHead": {
         "message": "Alignment tool"
@@ -2993,8 +3005,8 @@
     "posholdHoverThrottle": {
         "message": "Hover throttle"
     },
-    "posholdHoverMidThrottle": {
-        "message": "Use mid. throttle for ALTHOLD"
+    "navmcAltholdThrottle": {
+        "message": "Stick position for althold hover"
     },
     "mcWpSlowdown": {
         "message": "Slow down when approaching waypoint"
@@ -4829,6 +4841,15 @@
     "save": {
         "message": "Save"
     },
+    "copy": {
+        "message": "Copy"
+    },
+    "paste": {
+        "message": "Paste"
+    },
+    "clear": {
+        "message": "Clear"
+    },
     "active": {
         "message": "Active"
     },
@@ -4837,12 +4858,6 @@
     },
     "itermRelaxHelp": {
         "message": "Defines Iterm relaxation algorithm activation. PR mean it's active on Roll and Pitch axis. PRY is active also on Yaw."
-    },
-    "gyro_main_lpf_type": {
-        "message": "Gyro LPF type"
-    },
-    "gyro_main_lpf_type_help": {
-        "message": "BIQUAD offers better noise attenuation for a price of higher delay. PT1 has lower attenuation but offers lower delay."
     },
     "dterm_lpf_type": {
         "message": "D-term LPF type"
@@ -5628,6 +5643,15 @@
     "osdSettingsSaved": {
         "message": "OSD settings saved"
     },
+    "osdLayoutInsertedIntoClipboard": {
+        "message": "Layout has been saved to clipboard"
+    },
+    "osdLayoutPasteFromClipboard": {
+        "message": "Layout has been restored from clipboard"
+    },
+    "osdClearLayout": {
+        "message": "Layout has been cleared"
+    },
     "failedToOpenSerialPort": {
         "message": "<span style=\"color: red\">Failed</span> to open serial port"
     },
@@ -5726,5 +5750,38 @@
     },
     "ezTuneNote": {
         "message": "<strong>Important</strong> Ez Tune is enabled. All settings on this tab are set and controlled by the Ez Tune. To use PID Tuning tab you have to disable Ez Tune. To do it, uncheck the <strong>Enabled</strong> checkbox on the Ez Tune tab."
+    },
+    "gsActivated": {
+        "message": "Ground station mode activated"
+    },
+    "gsDeactivated": {
+        "message": "Ground station mode deactivated"
+    },
+    "gsTelemetry": {
+        "message": "Telemetry"
+    },
+    "gsTelemetryLatitude": {
+        "message": "Latitude"
+    },
+    "gsTelemetryLongitude": {
+        "message": "Longitude"
+    },
+    "gsTelemetryAltitude": {
+        "message": "Altitude"
+    },
+    "gsTelemetryAltitudeShort": {
+        "message": "Alt"
+    },
+    "gsTelemetryVoltageShort": {
+        "message": "Vbat"
+    },
+    "gsTelemetrySats": {
+        "message": "Sats"
+    },
+    "gsTelemetryFix": {
+        "message": "Fix"
+    },
+    "gsTelemetrySpeed": {
+        "message": "Speed"
     }
 }

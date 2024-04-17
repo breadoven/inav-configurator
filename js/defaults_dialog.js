@@ -434,10 +434,6 @@ helper.defaultsDialog = (function () {
                 value: 1
             },
             {
-                key: "gyro_main_lpf_type",
-                value: "BIQUAD"
-            },
-            {
                 key: "dynamic_gyro_notch_enabled",
                 value: "ON"
             },
@@ -579,7 +575,7 @@ helper.defaultsDialog = (function () {
             },
             {
                 key: "nav_wp_radius",
-                value: 5000
+                value: 800
             },
             {
                 key: "nav_wp_max_safe_distance",
@@ -641,10 +637,6 @@ helper.defaultsDialog = (function () {
             {
                 key: "d_boost_max",
                 value: 1
-            },
-            {
-                key: "gyro_main_lpf_type",
-                value: "BIQUAD"
             },
             {
                 key: "dynamic_gyro_notch_enabled",
@@ -788,7 +780,7 @@ helper.defaultsDialog = (function () {
             },
             {
                 key: "nav_wp_radius",
-                value: 5000
+                value: 1000
             },
             {
                 key: "nav_wp_max_safe_distance",
@@ -830,10 +822,6 @@ helper.defaultsDialog = (function () {
             {
                 key: "gyro_main_lpf_hz",
                 value: 10
-            },
-            {
-                key: "gyro_main_lpf_type",
-                value: "BIQUAD"
             },
             {
                 key: "motor_pwm_protocol",
