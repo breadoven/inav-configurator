@@ -241,3 +241,5 @@ var MSPCodes = {
     MSP2_INAV_SERVO_CONFIG:             0x2200,
     MSP2_INAV_SET_SERVO_CONFIG:         0x2201,
 };
+
+module.exports = MSPCodes;
