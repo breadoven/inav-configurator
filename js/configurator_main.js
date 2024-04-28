@@ -1,4 +1,4 @@
-window.$ = window.jQuery =  require('jquery'), 
+window.$ = window.jQuery =  require('jquery'),
                             require('jquery-ui-dist/jquery-ui'),
                             require('jquery-textcomplete'),
                             require('./libraries/jquery.flightindicators'),
@@ -25,13 +25,13 @@ const appUpdater = require('./appUpdater');
 const CliAutoComplete = require('./CliAutoComplete');
 const { SITLProcess } = require('./sitl');
 
-process.on('uncaughtException', function (error) {   
+process.on('uncaughtException', function (error) {
     if (process.env.NODE_ENV !== 'development') {
         GUI.log(i18n.getMessage('unexpectedError', error.message));
         if (GUI.connected_to || GUI.connecting_to) {
             GUI.log(i18n.getMessage('disconnecting'));
             $('a.connect').trigger('click');
-        } 
+        }
     } else {
         throw error;
     }
@@ -67,7 +67,7 @@ $(function() {
                     }
                 }
             }
-        
+
             return useEzTune;
         };
 
@@ -78,7 +78,7 @@ $(function() {
         }
 
         globalSettings.unitType = store.get('unit_type', UnitType.none);
-        globalSettings.mapProviderType = store.get('map_provider_type', 'osm'); 
+        globalSettings.mapProviderType = store.get('map_provider_type', 'osm');
         globalSettings.mapApiKey = store.get('map_api_key', '');
         globalSettings.proxyURL = store.get('proxyurl', 'http://192.168.1.222/mapproxy/service?');
         globalSettings.proxyLayer = store.get('proxylayer', 'your_proxy_layer_name');
@@ -88,7 +88,7 @@ $(function() {
         var cliAutocomplete = store.get('cli_autocomplete', true);
         globalSettings.cliAutocomplete = cliAutocomplete;
         CliAutoComplete.setEnabled(cliAutocomplete);
-        
+
 
         // Resets the OSD units used by the unit coversion when the FC is disconnected.
         if (!CONFIGURATOR.connectionValid) {
@@ -108,7 +108,7 @@ $(function() {
             $("#showlog").trigger('click');
         }
 
-        if (store.get('update_notify', true)) { 
+        if (store.get('update_notify', true)) {
             appUpdater.checkRelease(app.getVersion());
         }
 
@@ -343,7 +343,7 @@ $(function() {
                     $('#proxylayer').val(globalSettings.proxyLayer);
                     $('#showProfileParameters').prop('checked', globalSettings.showProfileParameters);
                     $('#cliAutocomplete').prop('checked', globalSettings.cliAutocomplete);
-                    
+
                     i18n.getLanguages().forEach(lng => {
                         $('#languageOption').append("<option value='{0}'>{1}</option>".format(lng, i18n.getMessage("language_" + lng)));
                     });
@@ -511,7 +511,7 @@ $(function() {
 
             state = true;
         }
-        
+
         $(this).html(state ? i18n.getMessage("mainHideLog") : i18n.getMessage("mainShowLog"));
         $(this).data('state', state);
 

@@ -3160,6 +3160,9 @@ TABS.mission_control.initialize = function (callback) {
     //
     /////////////////////////////////////////////
     function loadMissionFile(filename) {
+        const fs = require('fs');
+        if (!xml2js) return GUI.log(i18n.getMessage('errorReadingFileXml2jsNotFound'));
+
         for (let i = FC.SAFEHOMES.getMaxSafehomeCount(); i < FC.FW_APPROACH.getMaxFwApproachCount(); i++) {
             FC.FW_APPROACH.clean(i);
         }
@@ -3340,6 +3343,9 @@ TABS.mission_control.initialize = function (callback) {
     }
 
     function saveMissionFile(filename) {
+        const fs = require('fs');
+        if (!xml2js) return GUI.log(i18n.getMessage('errorWritingFileXml2jsNotFound'));
+
         var center = ol.proj.toLonLat(map.getView().getCenter());
         var zoom = map.getView().getZoom();
         let multimission = multimissionCount && !singleMissionActive();
