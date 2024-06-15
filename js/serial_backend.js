@@ -28,11 +28,13 @@ const groundstation = require('./groundstation');
 const ltmDecoder = require('./ltmDecoder');
 const mspDeduplicationQueue = require('./msp/mspDeduplicationQueue');
 
+const settingsCache = require('./settingsCache');
+
 var SerialBackend = (function () {
 
     var publicScope = {},
         privateScope = {};
-        
+
     privateScope.isDemoRunning = false;
 
     privateScope.isWirelessMode = false;
@@ -41,12 +43,12 @@ var SerialBackend = (function () {
      * Handle "Wireless" mode with strict queueing of messages
      */
     publicScope.init = function() {
-        
+
         privateScope.$port = $('#port'),
         privateScope.$baud = $('#baud'),
         publicScope.$portOverride = $('#port-override'),
         mspHelper.setSensorStatusEx(privateScope.sensor_status_ex);
-        
+
         $('#wireless-mode').on('change', function () {
             var $this = $(this);
 
@@ -109,7 +111,7 @@ var SerialBackend = (function () {
             }
         };
 
-        
+
 
         GUI.updateManualPortVisibility = function(){
             var selected_port = privateScope.$port.find('option:selected');
@@ -131,7 +133,7 @@ var SerialBackend = (function () {
             }
             else {
                 privateScope.$baud.show();
-            }        
+            }
 
             if (selected_port.data().isBle || selected_port.data().isTcp || selected_port.data().isUdp || selected_port.data().isSitl) {
                 $('.tab_firmware_flasher').hide();
@@ -145,9 +147,9 @@ var SerialBackend = (function () {
                 type = ConnectionType.TCP;
             } else if (selected_port.data().isUdp) {
                 type = ConnectionType.UDP;
-            } 
+            }
             CONFIGURATOR.connection = connectionFactory(type, CONFIGURATOR.connection);
-            
+
         };
 
         GUI.updateManualPortVisibility();
@@ -157,7 +159,7 @@ var SerialBackend = (function () {
         });
 
         publicScope.$portOverride.val(store.get('portOverride', ''));
-        
+
 
         privateScope.$port.on('change', function (target) {
             GUI.updateManualPortVisibility();
@@ -176,7 +178,7 @@ var SerialBackend = (function () {
                 var selected_port = privateScope.$port.find('option:selected').data().isManual ?
                     publicScope.$portOverride.val() :
                         String(privateScope.$port.val());
-                
+
                 if (selected_port === 'DFU') {
                     GUI.log(i18n.getMessage('dfu_connect_message'));
                 }
@@ -197,7 +199,7 @@ var SerialBackend = (function () {
                             if (SITLProcess.isRunning) {
                                 SITLProcess.stop();
                             }
-                            SITLProcess.start("demo.bin"), 1000;                        
+                            SITLProcess.start("demo.bin"), 1000;
                             this.isDemoRunning = true;
 
                             // Wait 1 sec until SITL is ready
@@ -212,7 +214,7 @@ var SerialBackend = (function () {
                             SITLProcess.stop();
                             this.isDemoRunning = false;
                         }
-                        
+
                         var wasConnected = CONFIGURATOR.connectionValid;
 
                         timeout.killAll();
@@ -239,6 +241,7 @@ var SerialBackend = (function () {
                             mspQueue.freeHardLock();
                             mspQueue.freeSoftLock();
                             mspDeduplicationQueue.flush();
+                            settingsCache.flush();
 
                             CONFIGURATOR.connection.disconnect(privateScope.onClosed);
                             MSP.disconnect_cleanup();
@@ -358,7 +361,7 @@ var SerialBackend = (function () {
                 // variable isn't stored yet, saving
                 store.set('last_used_port', GUI.connected_to);
             }
-        
+
 
             store.set('last_used_bps', CONFIGURATOR.connection.bitrate);
             store.set('wireless_mode_enabled', $('#wireless-mode').is(":checked"));
@@ -396,7 +399,7 @@ var SerialBackend = (function () {
             // upgrade to MSPv2 if possible.
             MSP.protocolVersion = MSP.constants.PROTOCOL_V2;
             MSP.send_message(MSPCodes.MSP_API_VERSION, false, false, function () {
-                
+
                 if (FC.CONFIG.apiVersion === "0.0.0") {
                     GUI_control.prototype.log("<span style='color: red; font-weight: bolder'><strong>" + i18n.getMessage("illegalStateRestartRequired") + "</strong></span>");
                     FC.restartRequired = true;
@@ -411,14 +414,14 @@ var SerialBackend = (function () {
 
                             GUI.log(i18n.getMessage('fcInfoReceived', [FC.CONFIG.flightControllerIdentifier, FC.CONFIG.flightControllerVersion]));
                             if (semver.gte(FC.CONFIG.flightControllerVersion, CONFIGURATOR.minfirmwareVersionAccepted) && semver.lt(FC.CONFIG.flightControllerVersion, CONFIGURATOR.maxFirmwareVersionAccepted)) {
-                                if (CONFIGURATOR.connection.type == ConnectionType.BLE && semver.lt(FC.CONFIG.flightControllerVersion, "5.0.0")) {  
+                                if (CONFIGURATOR.connection.type == ConnectionType.BLE && semver.lt(FC.CONFIG.flightControllerVersion, "5.0.0")) {
                                     privateScope.onBleNotSupported();
                                 } else {
                                     mspHelper.getCraftName(function(name) {
                                         if (name) {
                                             FC.CONFIG.name = name;
                                         }
-                                        privateScope.onValidFirmware();  
+                                        privateScope.onValidFirmware();
                                     });
                                 }
                             } else  {
