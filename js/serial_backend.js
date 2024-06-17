@@ -28,8 +28,6 @@ const groundstation = require('./groundstation');
 const ltmDecoder = require('./ltmDecoder');
 const mspDeduplicationQueue = require('./msp/mspDeduplicationQueue');
 
-const settingsCache = require('./settingsCache');
-
 var SerialBackend = (function () {
 
     var publicScope = {},
@@ -241,7 +239,6 @@ var SerialBackend = (function () {
                             mspQueue.freeHardLock();
                             mspQueue.freeSoftLock();
                             mspDeduplicationQueue.flush();
-                            settingsCache.flush();
 
                             CONFIGURATOR.connection.disconnect(privateScope.onClosed);
                             MSP.disconnect_cleanup();
