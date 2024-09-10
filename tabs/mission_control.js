@@ -2216,7 +2216,7 @@ TABS.mission_control.initialize = function (callback) {
         // Update Alt display in meters on ALT field keypress up
         //////////////////////////////////////////////////////////////////////////
         $('#pointAlt').on('keyup', () => {
-            let altitudeMeters = app.ConvertCentimetersToMeters($(this).val());
+            let altitudeMeters = app.ConvertCentimetersToMeters($('#pointAlt').val());
             $('#altitudeInMeters').text(` ${altitudeMeters}m`);
         });
 
