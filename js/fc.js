@@ -282,6 +282,8 @@ var FC = {
         this.ADSB_VEHICLES = {
             vehiclesCount: 0,
             callsignLength: 0,
+            vehiclePacketCount: 0,
+            heartbeatPacketCount: 0,
             vehicles: []
         };
 
@@ -654,7 +656,6 @@ var FC = {
     getGpsProtocols: function () {
         return [
             'UBLOX',
-            'UBLOX7',
             'MSP',
             'FAKE'
         ];
@@ -941,6 +942,27 @@ var FC = {
             'GVAR 6',               // 36
             'GVAR 7',               // 37
             'Mixer Transition',     // 38
+            'Head Tracker Pan',     // 39
+            'Head Tracker Tilt',    // 40
+            'Head Tracker Roll',    // 41
+            'RC Channel 17',        // 42
+            'RC Channel 18',        // 43
+            'RC Channel 19',        // 44
+            'RC Channel 20',        // 45
+            'RC Channel 21',        // 46
+            'RC Channel 22',        // 47
+            'RC Channel 23',        // 48
+            'RC Channel 24',        // 49
+            'RC Channel 25',        // 50
+            'RC Channel 26',        // 51
+            'RC Channel 27',        // 52
+            'RC Channel 28',        // 53
+            'RC Channel 29',        // 54
+            'RC Channel 30',        // 55
+            'RC Channel 31',        // 56
+            'RC Channel 32',        // 57
+            'RC Channel 33',        // 58
+            'RC Channel 34',        // 59
         ];
     },
     getServoMixInputName: function (input) {

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, MenuItem } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, MenuItem, shell } = require('electron');
 const windowStateKeeper = require('electron-window-state');
 const path = require('path');
 const Store = require('electron-store');
@@ -72,7 +72,7 @@ function createWindow() {
     icon: "images/inav_icon_128.png",
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false,
+      contextIsolation: false
     },
   });
 
@@ -148,6 +148,12 @@ function createWindow() {
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // Open links starts with https:// in default browser
+    if (url.startsWith('https://')) {
+      shell.openExternal(url);
+      return { action: 'deny' };
+    }
+
     return {
       action: 'allow',
       overrideBrowserWindowOptions: {
@@ -157,6 +163,12 @@ function createWindow() {
   });
 
   app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors')
+  
+  if (process.platform === "linux"){
+    app.commandLine.appendSwitch("enable-experimental-web-platform-features", true);
+  }
+
+  app.commandLine.appendSwitch("enable-web-bluetooth", true);
 
   require("@electron/remote/main").enable(mainWindow.webContents);
   mainWindow.removeMenu();
