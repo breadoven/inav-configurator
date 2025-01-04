@@ -10,7 +10,8 @@ const ProgrammingPidStatus = require('./programmingPidStatus');
 const WaypointCollection = require('./waypointCollection');
 const OutputMappingCollection = require('./outputMapping');
 const SafehomeCollection = require('./safehomeCollection');
-const FwApproachCollection = require('./fwApproachCollection')
+const FwApproachCollection = require('./fwApproachCollection');
+const GeozoneCollection = require('./geozoneCollection');
 const { PLATFORM } = require('./model')
 const VTX = require('./vtx');
 const BitHelper = require('./bitHelper');
@@ -86,6 +87,7 @@ var FC = {
     RATE_DYNAMICS: null,
     EZ_TUNE: null,
     FLIGHT_MODES: null,
+    GEOZONES: null,
 
     restartRequired: false,
     MAX_SERVO_RATE: 125,
@@ -597,6 +599,7 @@ var FC = {
 
 
         this.FW_APPROACH = new FwApproachCollection();
+        this.GEOZONES = new GeozoneCollection();
 
         this.OSD_CUSTOM_ELEMENTS = {
            settings: {customElementsCount: 0, customElementTextSize: 0, customElementParts: 0},
@@ -634,7 +637,8 @@ var FC = {
             {bit: 2, group: 'other', name: 'TX_PROF_SEL', haveTip: false, showNameInTip: false},
             {bit: 0, group: 'other', name: 'THR_VBAT_COMP', haveTip: true, showNameInTip: true},
             {bit: 3, group: 'other', name: 'BAT_PROFILE_AUTOSWITCH', haveTip: true, showNameInTip: true},
-            {bit: 31, group: 'other', name: "FW_AUTOTRIM", haveTip: true, showNameInTip: true}
+            {bit: 31, group: 'other', name: "FW_AUTOTRIM", haveTip: true, showNameInTip: true},
+            {bit: 4, group: 'other', name: "GEOZONE", haveTip: true, showNameInTip: true}
         ];
 
         return features.reverse();
@@ -970,12 +974,11 @@ var FC = {
     },
     getModeId: function (name) {
 
-        let mode = FLIGHT_MODES.find( mode => mode.boxName === name );
-        if (mode) {
-            return mode.permanentId;
-        } else {
-            return -1;
+        for (var i = 0; i < FC.AUX_CONFIG.length; i++) {
+            if (FC.AUX_CONFIG[i] == name)
+                return i;
         }
+        return -1;
     },
     isModeBitSet: function (i) {
         return BitHelper.bit_check(this.CONFIG.mode[Math.trunc(i / 32)], i % 32);
