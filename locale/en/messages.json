@@ -2068,6 +2068,9 @@
     "adjustmentsFunction59": {
         "message": "Multi Mission Index Adjustment"
     },
+    "adjustmentsFunction60": {
+        "message": "Fixed Wing Alt Control Response Adjustment"
+    },
     "adjustmentsSave": {
         "message": "Save"
     },
