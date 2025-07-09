@@ -342,7 +342,6 @@ $(function() {
 
                     $('#ui-unit-type').val(globalSettings.unitType);
                     $('#map-provider-type').val(globalSettings.mapProviderType);
-                    $('#map-api-key').val(globalSettings.mapApiKey);
                     $('#proxyurl').val(globalSettings.proxyURL);
                     $('#proxylayer').val(globalSettings.proxyLayer);
                     $('#showProfileParameters').prop('checked', globalSettings.showProfileParameters);
@@ -378,10 +377,6 @@ $(function() {
                     $('#map-provider-type').on('change', function () {
                         store.set('map_provider_type', $(this).val());
                         globalSettings.mapProviderType = $(this).val();
-                    });
-                    $('#map-api-key').on('change', function () {
-                        store.set('map_api_key', $(this).val());
-                        globalSettings.mapApiKey = $(this).val();
                     });
                     $('#proxyurl').on('change', function () {
                         store.set('proxyurl', $(this).val());
