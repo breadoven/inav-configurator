@@ -74,6 +74,7 @@ var mspHelper = (function () {
             color;
         if (!dataHandler.unsupported || dataHandler.unsupported) switch (dataHandler.code) {
             case MSPCodes.MSPV2_INAV_STATUS:
+
                 let profile_changed = 0;
                 FC.CONFIG.cycleTime = data.getUint16(offset, true);
                 offset += 2;
@@ -228,7 +229,7 @@ var mspHelper = (function () {
                     FC.ADSB_VEHICLES.vehicles.push(vehicle);
                 }
                 break;
-                
+
             case MSPCodes.MSP_ATTITUDE:
                 FC.SENSOR_DATA.kinematics[0] = data.getInt16(0, true) / 10.0; // x
                 FC.SENSOR_DATA.kinematics[1] = data.getInt16(2, true) / 10.0; // y
@@ -321,7 +322,7 @@ var mspHelper = (function () {
             case MSPCodes.MSP_LOOP_TIME:
                 FC.FC_CONFIG.loopTime = data.getInt16(0, true);
                 break;
-            
+
             case MSPCodes.MSPV2_INAV_MISC:
                 FC.MISC.midrc = data.getInt16(offset, true);
                 offset += 2;
@@ -1442,7 +1443,7 @@ var mspHelper = (function () {
                         });
                 }
                 break;
-            
+
             case MSPCodes.MSP2_INAV_TIMER_OUTPUT_MODE:
                 if(data.byteLength > 2) {
                     FC.OUTPUT_MAPPING.flushTimerOverrides();
@@ -1514,9 +1515,9 @@ var mspHelper = (function () {
                     data.getInt16(10, true),
                     data.getInt16(12, true),
                     data.getUint8(14, true),
-                ));                
+                ));
                 break;
-            
+
                 case MSPCodes.MSP2_INAV_SET_FW_APPROACH:
                     console.log('FW Approach saved');
                     break;
@@ -1567,7 +1568,7 @@ var mspHelper = (function () {
                 FC.OSD_CUSTOM_ELEMENTS.settings.customElementTextSize = data.getUint8(settingsIdx++);
                 FC.OSD_CUSTOM_ELEMENTS.settings.customElementParts = data.getUint8(settingsIdx++);
                 break;
-            case MSPCodes.MSP2_INAV_CUSTOM_OSD_ELEMENT:        
+            case MSPCodes.MSP2_INAV_CUSTOM_OSD_ELEMENT:
                 var customElement = {
                     customElementItems: [],
                     customElementVisibility: {type: 0, value: 0},
@@ -1605,13 +1606,13 @@ var mspHelper = (function () {
             case MSPCodes.MSP2_INAV_GPS_UBLOX_COMMAND:
                 // Just and ACK from the fc.
                 break;
-            
+
             case MSPCodes.MSP2_INAV_GEOZONE:
-                
+
                 if (data.buffer.byteLength == 0) {
                     break;
                 }
-                var geozone = new Geozone(        
+                var geozone = new Geozone(
                     data.getUint8(1),
                     data.getUint8(2),
                     data.getInt32(3, true),
@@ -1630,7 +1631,7 @@ var mspHelper = (function () {
                     geozone.setVertices(new Array(verticesCount));
                 } else {
                     geozone.setVertices(new Array(1));
-                }                
+                }
                 FC.GEOZONES.put(geozone);
                 break;
             case MSPCodes.MSP2_INAV_GEOZONE_VERTEX:
@@ -1654,14 +1655,14 @@ var mspHelper = (function () {
                     }
                 }
                 break;
-            
+
             case MSPCodes.MSP2_INAV_SET_GEOZONE_VERTICE:
                 console.log("Geozone vertex saved")
-                break; 
-            
+                break;
+
             case MSPCodes.MSP2_INAV_SET_GEOZONE:
                 console.log("Geozone saved")
-                break;    
+                break;
 
             default:
                 console.log('Unknown code detected: 0x' + dataHandler.code.toString(16));
@@ -3164,9 +3165,9 @@ var mspHelper = (function () {
                 return;
             }
             if (vertexID < FC.GEOZONES.at(geozoneID).getVerticesCount() && zone.getShape() == GeozoneShapes.POLYGON) {
-                MSP.send_message(MSPCodes.MSP2_INAV_GEOZONE_VERTEX, [geozoneID, vertexID], false, nextVertex); 
+                MSP.send_message(MSPCodes.MSP2_INAV_GEOZONE_VERTEX, [geozoneID, vertexID], false, nextVertex);
             } else {
-                MSP.send_message(MSPCodes.MSP2_INAV_GEOZONE_VERTEX, [geozoneID, vertexID], false, nextGeozone); 
+                MSP.send_message(MSPCodes.MSP2_INAV_GEOZONE_VERTEX, [geozoneID, vertexID], false, nextGeozone);
             }
         }
 
@@ -3195,9 +3196,9 @@ var mspHelper = (function () {
                 return;
             }
             if (vertexID < FC.GEOZONES.at(geozoneID).getVerticesCount() - 1) {
-                MSP.send_message(MSPCodes.MSP2_INAV_SET_GEOZONE_VERTICE, FC.GEOZONES.extractBufferVertices(geozoneID, vertexID), false, nextVertex); 
+                MSP.send_message(MSPCodes.MSP2_INAV_SET_GEOZONE_VERTICE, FC.GEOZONES.extractBufferVertices(geozoneID, vertexID), false, nextVertex);
             } else {
-                MSP.send_message(MSPCodes.MSP2_INAV_SET_GEOZONE_VERTICE, FC.GEOZONES.extractBufferVertices(geozoneID, vertexID), false, nextGeozone); 
+                MSP.send_message(MSPCodes.MSP2_INAV_SET_GEOZONE_VERTICE, FC.GEOZONES.extractBufferVertices(geozoneID, vertexID), false, nextGeozone);
             }
         }
 
@@ -3328,11 +3329,11 @@ var mspHelper = (function () {
 
     self.encodeSetting = function (name, value) {
         return this._getSetting(name).then(function (setting) {
-            
+
             if (!setting) {
                 throw 'Invalid setting';
             }
-            
+
             if (setting.table && !Number.isInteger(value)) {
                 var found = false;
                 for (var ii = 0; ii < setting.table.values.length; ii++) {

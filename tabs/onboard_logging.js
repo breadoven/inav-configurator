@@ -379,7 +379,7 @@ TABS.onboard_logging.initialize = function (callback) {
                                     dismiss_saving_dialog();
                                 } else if (nextAddress >= maxBytes) {
                                     mark_saving_dialog_done();
-                                }else {
+                                } else {
                                     mspHelper.dataflashRead(nextAddress, onChunkRead);
                                 }
 

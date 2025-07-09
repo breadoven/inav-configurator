@@ -69,7 +69,7 @@ const mspQueue = require('./serial_queue');
                 width: FC.ANALOG.battery_percentage + "%",
                 display: 'inline-block'
             });
-        
+
             if (active) {
                 $(".linkicon").css({
                     'background-image': 'url("./images/icons/cf_icon_link_active.svg")'
@@ -103,12 +103,12 @@ const mspQueue = require('./serial_queue');
         });
 
         if (!stoppped && GUI.active_tab != 'cli') {
-
+            
             MSP.send_message(MSPCodes.MSP_SENSOR_STATUS, false, false);
             MSP.send_message(MSPCodes.MSPV2_INAV_STATUS, false, false);
             MSP.send_message(MSPCodes.MSP_ACTIVEBOXES, false, false);
             MSP.send_message(MSPCodes.MSPV2_INAV_ANALOG, false, false);
-            
+
 
             privateScope.updateView();
         }
