@@ -81,7 +81,6 @@ $(function() {
         globalSettings.store = store;
         globalSettings.unitType = store.get('unit_type', UnitType.none);
         globalSettings.mapProviderType = store.get('map_provider_type', 'osm');
-        globalSettings.mapApiKey = store.get('map_api_key', '');
         globalSettings.assistnowApiKey = store.get('assistnow_api_key', '');
         globalSettings.proxyURL = store.get('proxyurl', 'http://192.168.1.222/mapproxy/service?');
         globalSettings.proxyLayer = store.get('proxylayer', 'your_proxy_layer_name');
