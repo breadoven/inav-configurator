@@ -58,7 +58,7 @@ mv /tmp/INAV\ Configurator /opt/inav/inav-configurator
 8. Update the application icon.
 ```
 sudo mkdir /opt/inav/inav-configurator/icon
-sudo cp /opt/inav/inav-configurator/images/inav_icon_128.png /opt/inav/inav-configurator/icon
+sudo cp /opt/inav/inav-configurator/resources/app/images/inav_icon_128.png /opt/inav/inav-configurator/icon
 ```
 9. As a one-off, move the desktop file into the applications directory 
 ```
@@ -81,11 +81,11 @@ sudo mv inav-configurator.desktop /usr/share/applications/
 For local development, the **node.js** build system is used.
 
 1. Install node.js
-1. From the project folder run `yarn install` and then `npm install`
-1. To build the  and start the configurator:
-    - Run `npm start`.
+1. From the project folder run `yarn install`
+1. To build the and start the configurator:
+    - Run `yarn start`.
 
-To build the App run `npm run make` to build for your platform.
+To build the App run `yarn run make` to build for your platform.
 
 Options:
 * Architecture: --arch  - Allowed values are: "ia32", "x64", "armv7l", "arm64", "universal", or "mips64el". 
@@ -113,8 +113,20 @@ Example (note the double -- ):
 To be able to open Inspector, set environment variable `NODE_ENV` to `development` or set the flag directly when run `npm start`:
 
 ```NODE_ENV=development npm start``` or ```$env:NODE_ENV="development" | npm start``` for Windows PowerShell
+Chrome Devtools will be available on http://localhost:9222. This can also be used with an MCP plugin
 
-Or use vscode and start a debug session `Debug Configurator` (Just hit F5!)
+Or use VScode and start a debug session `Debug Configurator` (Just hit F5!)
+
+To debug the main thread (source files in `js/main`), just set a breakpoint in VScode.
+
+
+To capture a debug log from a packaged version (such as from a user), they can run it as:
+```.\inav-configurator.exe --enable-logging --log-file=inav-log.txt```
+or to log to the console:
+```.\inav-configurator.exe --enable-logging --log-file=inav-log.txt```
+
+
+
 
 ## Different map providers
 
