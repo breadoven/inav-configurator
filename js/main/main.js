@@ -1,11 +1,11 @@
-import { chmod, rm } from 'node:fs';
+import { chmod, rm, mkdirSync, existsSync } from 'node:fs';
 import { app, BrowserWindow, ipcMain, Menu, MenuItem, shell, dialog } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import Store from "electron-store";
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import started from 'electron-squirrel-startup';
-import { writeFile, readFile, appendFile } from 'node:fs/promises';
+import { writeFile, readFile, appendFile, readdir } from 'node:fs/promises';
 
 import tcp from './tcp';
 import udp from './udp';
@@ -64,7 +64,7 @@ function createDeviceChooser() {
   bluetoothDeviceChooser = new BrowserWindow({
     parent: mainWindow,
     width: 410,
-    height: 400,
+    height: 600,
     webPreferences: {
       preload: path.join(__dirname, 'bt-device-chooser-preload.mjs'),
     }
@@ -280,8 +280,35 @@ app.whenReady().then(() => {
     return dialog.showOpenDialog(options);
   }),
 
-  ipcMain.handle('dialog.showSaveDialog', (_event, options) => {
-    return dialog.showSaveDialog(options);
+  ipcMain.handle('dialog.showSaveDialog', async (_event, options) => {
+    const opts = options || {};
+    const LAST_SAVE_DIRECTORY_KEY = 'lastSaveDirectory';
+
+    // Get the last save directory from store
+    const lastDirectory = store.get(LAST_SAVE_DIRECTORY_KEY, null);
+
+    // If we have a last directory, combine it with the filename if one was provided
+    if (lastDirectory && opts.defaultPath) {
+      // If defaultPath is just a filename (no directory), prepend the last directory
+      if (!path.dirname(opts.defaultPath) || path.dirname(opts.defaultPath) === '.') {
+        opts.defaultPath = path.join(lastDirectory, opts.defaultPath);
+      }
+    } else if (lastDirectory && !opts.defaultPath) {
+      // No filename provided, just use the directory
+      opts.defaultPath = lastDirectory;
+    }
+
+    // Show the save dialog
+    const result = await dialog.showSaveDialog(opts);
+
+    // If user selected a file (didn't cancel), save the directory for next time
+    if (result && result.filePath && !result.canceled) {
+      // Extract directory from the full file path (path already imported at top)
+      const directory = path.dirname(result.filePath);
+      store.set(LAST_SAVE_DIRECTORY_KEY, directory);
+    }
+
+    return result;
   }),
 
   ipcMain.on('dialog.alert', (event, message) => {
@@ -383,6 +410,32 @@ app.whenReady().then(() => {
         }
       });
     });
+  });
+
+  ipcMain.handle('getBackupDir', (_event) => {
+    const backupDir = path.join(app.getPath('userData'), 'inav-backups');
+    if (!existsSync(backupDir)) {
+      mkdirSync(backupDir, { recursive: true });
+    }
+    return backupDir;
+  });
+
+  ipcMain.handle('openBackupDir', (_event) => {
+    const backupDir = path.join(app.getPath('userData'), 'inav-backups');
+    if (!existsSync(backupDir)) {
+      mkdirSync(backupDir, { recursive: true });
+    }
+    shell.openPath(backupDir); // fire-and-forget: xdg-open on Linux never exits
+    return backupDir;
+  });
+
+  ipcMain.handle('listBackups', async (_event) => {
+    const backupDir = path.join(app.getPath('userData'), 'inav-backups');
+    if (!existsSync(backupDir)) {
+      return [];
+    }
+    const files = await readdir(backupDir);
+    return files.filter(f => f.endsWith('.txt') || f.endsWith('.cli'));
   });
 
   ipcMain.on('startChildProcess', (_event, command, args, opts) => {

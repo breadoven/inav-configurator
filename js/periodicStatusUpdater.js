@@ -1,6 +1,6 @@
 'use strict';
 
-import { GUI } from './gui';
+import GUI from './gui';
 import FC from './fc';
 import CONFIGURATOR from './data_storage';
 import MSP from './msp';
@@ -97,8 +97,8 @@ import MSPCodes from './msp/MSPCodes';
             display: 'inline-block'
         });
 
-        if (!stoppped && GUI.active_tab != 'cli') {
-            
+        if (!stoppped && !CONFIGURATOR.cliActive) {
+
             MSP.send_message(MSPCodes.MSP_SENSOR_STATUS, false, false);
             MSP.send_message(MSPCodes.MSPV2_INAV_STATUS, false, false);
             MSP.send_message(MSPCodes.MSP_ACTIVEBOXES, false, false);

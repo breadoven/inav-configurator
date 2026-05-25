@@ -31,13 +31,16 @@ import Circle from 'ol/geom/Circle';
 import PointerInteraction from 'ol/interaction/Pointer.js';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import {Control, defaults as defaultControls} from 'ol/control.js';
+import DragAndDrop from 'ol/interaction/DragAndDrop.js';
+import {GPX, GeoJSON, IGC, KML, TopoJSON} from 'ol/format.js';
+import { unzipSync } from 'fflate';
 
 import MSPChainerClass from './../js/msp/MSPchainer';
 import mspHelper from './../js/msp/MSPHelper';
 import MSPCodes from './../js/msp/MSPCodes';
 import MSP from './../js/msp';
 import mspQueue from './../js/serial_queue';
-import { GUI, TABS } from './../js/gui';
+import GUI from './../js/gui';
 import FC from './../js/fc';
 import CONFIGURATOR from './../js/data_storage';
 import i18n from './../js/localization';
@@ -57,6 +60,21 @@ import store from './../js/store';
 import dialog from '../js/dialog';
 
 import html from'./mission_control.html?raw';
+
+function extractKmlFromKmz(source) {
+    const data = source instanceof Uint8Array ? source : new Uint8Array(source);
+    const unzipped = unzipSync(data);
+    const kmlEntry = Object.keys(unzipped).find(name => name === 'doc.kml')
+                  || Object.keys(unzipped).find(name => name.endsWith('.kml'));
+    if (!kmlEntry) throw new Error('No KML file found in KMZ archive');
+    return new TextDecoder().decode(unzipped[kmlEntry]);
+}
+
+class KMZ extends KML {
+    getType() { return 'arraybuffer'; }
+    readFeature(source, options) { return super.readFeature(extractKmlFromKmz(source), options); }
+    readFeatures(source, options) { return super.readFeatures(extractKmlFromKmz(source), options); }
+}
 
 var MAX_NEG_FW_LAND_ALT = -2000; // cm
 
@@ -109,9 +127,9 @@ const icons = Object.create(null)
 //
 ////////////////////////////////////
 
-TABS.mission_control = {};
-TABS.mission_control.isYmapLoad = false;
-TABS.mission_control.initialize = function (callback) {
+const missionControlTab = {};
+missionControlTab.isYmapLoad = false;
+missionControlTab.initialize = function (callback) {
 
     let cursorInitialized = false;
     let curPosStyle;
@@ -122,9 +140,10 @@ TABS.mission_control.initialize = function (callback) {
     let breadCrumbStyle;
     let breadCrumbSource;
     let breadCrumbVector;
-    let textStyle;
-    let textFeature;
-    var textGeom;
+    let autoCenteredOnFix = false;
+    let lastGpsPos = null;
+    let infoOverlayEl;
+    let infoOverlaySpans;
     let isOffline = false;
     let selectedSafehome;
     let $safehomeContentBox;
@@ -135,13 +154,15 @@ TABS.mission_control.initialize = function (callback) {
     let isGeozoneEnabeld = false;
     let settings = {speed: 0, alt: 5000, safeRadiusSH: 50, fwApproachAlt: 60, fwLandAlt: 5, maxDistSH: 0, fwApproachLength: 0, fwLoiterRadius: 0};
 
-    if (GUI.active_tab != 'mission_control') {
-        GUI.active_tab = 'mission_control';
+    if (GUI.active_tab !== this) {
+        GUI.active_tab = this;
     }
 
     if (FC.isFeatureEnabled('GEOZONE')) {
         isGeozoneEnabeld = true;
     }
+
+    
 
     if (CONFIGURATOR.connectionValid) {
         var loadChainer = new MSPChainerClass();
@@ -226,7 +247,10 @@ function iconKey(filename) {
             $('#saveMissionButton').hide();
             $('#loadEepromMissionButton').hide();
             $('#saveEepromMissionButton').hide();
+            $('#centerOnDrone').hide();
             isOffline = true;
+        } else {
+            $('#centerOnDrone').show();
         }
 
         $('#infoGeozoneMissionWarning').hide();
@@ -234,6 +258,7 @@ function iconKey(filename) {
         $safehomeContentBox = $('#SafehomeContentBox');
         $waypointOptionsTableBody = $('#waypointOptionsTableBody');
         $geozoneContent = $('#geozoneContent');
+        $('#centerOnDrone').css({ opacity: 0.45, pointerEvents: 'none' });
 
 
             loadSettings();
@@ -241,6 +266,8 @@ function iconKey(filename) {
                     // alert("maxdistsh_load " + settings.maxDistSH);
             // let the dom load finish, avoiding the resizing of the map
             setTimeout(initMap, 200);
+            // Set initial button visibility based on mission state
+            setTimeout(updateLocationButtonsVisibility, 300);
             if (!isOffline) {
                 setTimeout(() => {
                     if (FC.SAFEHOMES.safehomeCount() >= 1) {
@@ -263,6 +290,20 @@ function iconKey(filename) {
 
         i18n.localize();
 
+        // Append shortcut hints after i18n sets titles (Ctrl-based)
+        const addShortcutHint = (selector, suffix) => {
+            const el = $(selector);
+            if (!el.length) return;
+            const current = el.attr('title') || '';
+            if (current.includes(suffix)) return;
+            el.attr('title', `${current}${current ? ' ' : ''}${suffix}`.trim());
+        };
+        addShortcutHint('#centerOnDroneButton', '(Ctrl+C)');
+        addShortcutHint('#loadFileMissionButton', '(Ctrl+L)');
+        addShortcutHint('#saveFileMissionButton', '(Ctrl+S)');
+        addShortcutHint('#removeAllPoints a', '(Ctrl+D)');
+        addShortcutHint('#searchAddressButton', '(Ctrl+A)');
+
         function get_raw_gps_data() {
             MSP.send_message(MSPCodes.MSP_RAW_GPS, false, false, get_comp_gps_data);
         }
@@ -284,9 +325,12 @@ function iconKey(filename) {
 
           let lat = FC.GPS_DATA.lat / 10000000;
           let lon = FC.GPS_DATA.lon / 10000000;
+                    const latLonPrecision = 5; // Raise this to 6 if you want more precise lat/lon readout later.
+
+          const hasGpsLock = FC.GPS_DATA.fix >= 2;
 
           //Update map
-          if (FC.GPS_DATA.fix >= 2) {
+          if (hasGpsLock) {
 
               if (!cursorInitialized) {
                   cursorInitialized = true;
@@ -369,47 +413,70 @@ function iconKey(filename) {
                     source: breadCrumbSource
                   });
 
-                  /////////////////////////////
-                  //create layer for heading, alt, groundspeed
-                  textGeom = new Point([0,0]);
-
-                  textStyle = new Style({
-                    text: new Text({
-                      font: 'bold 35px Calibri,sans-serif',
-                      fill: new Fill({ color: '#fff' }),
-                      offsetX: map.getSize()[0]-260,
-                      offsetY: 80,
-                      textAlign: 'left',
-                      backgroundFill: new Fill({ color: '#000' }),
-                      stroke: new Stroke({
-                        color: '#fff', width: 2
-                      }),
-                      text: 'H: XXX\nAlt: XXXm\nSpeed: XXXcm/s'
-                    })
-                  });
-
-                  textFeature = new Feature({
-                    geometry: textGeom
-                  });
-
-                  textFeature.setStyle(textStyle);
-
-                  var textSource = new VectorSource({
-                    features: [textFeature]
-                  });
-
-                  var textVector = new VectorLayer({
-                    source: textSource
-                  });
-
                   map.addLayer(rthLayer);
                   map.addLayer(breadCrumbVector);
                   map.addLayer(currentPositionLayer);
-                  map.addControl(textVector);
+
+                                    // Create a simple top bar overlay for telemetry text
+                                    const targetEl = map.getTargetElement();
+                                    if (targetEl) {
+                                        if (!targetEl.style.position) {
+                                            targetEl.style.position = 'relative';
+                                        }
+                                        infoOverlayEl = document.createElement('div');
+                                        infoOverlayEl.className = 'mc-gps-inline';
+                                        Object.assign(infoOverlayEl.style, {
+                                            position: 'absolute',
+                                            bottom: '1.125rem',
+                                            left: '0',
+                                            right: '0',
+                                            padding: '0.375rem 0.625rem',
+                                            background: 'rgba(0, 0, 0, 0.45)',
+                                            color: '#fff',
+                                            font: '600 1rem "Segoe UI", Calibri, sans-serif',
+                                            textShadow: '0 0 4px rgba(0, 0, 0, 0.8)',
+                                            textAlign: 'center',
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            gap: '1.125rem',
+                                            alignItems: 'center',
+                                            flexWrap: 'wrap',
+                                            fontVariantNumeric: 'tabular-nums',
+                                            pointerEvents: 'none',
+                                            zIndex: 5,
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            visibility: 'hidden'
+                                        });
+
+                                        infoOverlaySpans = {};
+                                        const telemetryFields = ['H', 'Alt', 'Spd', 'Dist', 'Sats', 'Lat', 'Lon'];
+                                        telemetryFields.forEach((field) => {
+                                            const span = document.createElement('span');
+                                            span.style.minWidth = '4.875rem';
+                                            span.style.textAlign = 'center';
+                                            infoOverlaySpans[field] = span;
+                                            infoOverlayEl.appendChild(span);
+                                        });
+
+                                        targetEl.appendChild(infoOverlayEl);
+                                    }
               }
 
               let gpsPos = fromLonLat([lon, lat]);
               curPosGeo.setCoordinates(gpsPos);
+              lastGpsPos = gpsPos;
+              $('#centerOnDrone').css({ opacity: 1, pointerEvents: 'auto' });
+
+                            // Uncomment to auto-center/zoom once when GPS lock is first acquired
+                            // if (!autoCenteredOnFix && map && map.getView()) {
+                            //     autoCenteredOnFix = true;
+                            //     map.getView().setCenter(gpsPos);
+                            //     if (map.getView().getZoom() < 14) {
+                            //         map.getView().setZoom(14);
+                            //     }
+                            // }
 
               breadCrumbLS.appendCoordinate(gpsPos);
 
@@ -422,15 +489,33 @@ function iconKey(filename) {
 
               curPosStyle.getImage().setRotation((FC.SENSOR_DATA.kinematics[2]/360.0) * 6.28318);
 
-              //update data text
-              textGeom.setCoordinates(map.getCoordinateFromPixel([0,0]));
-              let tmpText = textStyle.getText();
-              tmpText.setText('                                \n' +
-                              'H: ' + FC.SENSOR_DATA.kinematics[2] +
-                              '\nAlt: ' + FC.SENSOR_DATA.altitude +
-                              'm\nSpeed: ' + FC.GPS_DATA.speed + 'cm/s\n' +
-                              'Dist: ' + FC.GPS_DATA.distanceToHome + 'm');
+                            if (infoOverlayEl) {
+                                const latStr = lat.toFixed(latLonPrecision);
+                                const lonStr = lon.toFixed(latLonPrecision);
+                                infoOverlayEl.style.visibility = 'visible';
+                                if (infoOverlaySpans) {
+                                    infoOverlaySpans.H.textContent = `H: ${FC.SENSOR_DATA.kinematics[2]}`;
+                                    infoOverlaySpans.Alt.textContent = `Alt: ${FC.SENSOR_DATA.altitude} m`;
+                                    infoOverlaySpans.Spd.textContent = `Spd: ${FC.GPS_DATA.speed} cm/s`;
+                                    infoOverlaySpans.Dist.textContent = `Dist: ${FC.GPS_DATA.distanceToHome} m`;
+                                    infoOverlaySpans.Sats.textContent = `Sats: ${FC.GPS_DATA.numSat}`;
+                                    infoOverlaySpans.Lat.textContent = `Lat: ${latStr}`;
+                                    infoOverlaySpans.Lon.textContent = `Lon: ${lonStr}`;
+                                } else {
+                                    infoOverlayEl.textContent =
+                                        `H: ${FC.SENSOR_DATA.kinematics[2]}  ` +
+                                        `Alt: ${FC.SENSOR_DATA.altitude} m  ` +
+                                        `Spd: ${FC.GPS_DATA.speed} cm/s  ` +
+                                        `Dist: ${FC.GPS_DATA.distanceToHome} m  ` +
+                                        `Sats: ${FC.GPS_DATA.numSat}  ` +
+                                        `Lat: ${latStr}  Lon: ${lonStr}`;
+                                }
+                            }
           }
+                    else if (infoOverlayEl) {
+                        $('#centerOnDrone').css({ opacity: 0.45, pointerEvents: 'none' });
+                        infoOverlayEl.style.visibility = 'hidden';
+                    }
         }
 
         /*
@@ -1324,6 +1409,7 @@ function iconKey(filename) {
         setView(14);
         refreshLayers();
         updateTotalInfo();
+        updateLocationButtonsVisibility();
     }
 
     /* selects single mission from MM repository */
@@ -1365,6 +1451,7 @@ function iconKey(filename) {
         refreshLayers();
         updateTotalInfo();
         plotElevation();
+        updateLocationButtonsVisibility();
     }
 
     /* single mission selection using WP Edit panel button */
@@ -1425,7 +1512,6 @@ function iconKey(filename) {
             };
             dialog.showOpenDialog(options).then(result => {
                 if (result.canceled) {
-                    console.log('No file selected');
                     return;
                 }
 
@@ -1457,9 +1543,164 @@ function iconKey(filename) {
 
     /////////////////////////////////////////////
     //
+    // Layer Management Functions
+    //
+    /////////////////////////////////////////////
+
+    function updateLayerListUI() {
+        $('#layerListContainer').empty();
+        const customLayers = [];
+        map.getLayers().forEach(layer => {
+            if (layer.get('is_custom_overlay') === true) {
+                customLayers.push(layer);
+            }
+        });
+        if (customLayers.length === 0) {
+            $('#layerListContainer').html('<div style="color: #888; font-style: italic;">No layers loaded</div>');
+            return;
+        }
+        customLayers.forEach((layer, i) => {
+            const layerName = layer.get('name');
+            const isVisible = layer.getVisible();
+            const layerId = 'layer_' + layerName.replaceAll(/[^a-zA-Z0-9]/g, '_' + i);
+            const layerHtml = `
+                <div class="layer-item" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #444;">
+                    <div style="flex: 1; display: flex; align-items: center; min-width: 0;">
+                        <input id="${layerId}" type="checkbox" class="togglemedium layer-toggle" data-layer-name="${layerName}" ${isVisible ? 'checked' : ''} style="flex-shrink: 0;">
+                        <label for="${layerId}" style="margin-left: 8px; cursor: pointer; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${layerName}</label>
+                    </div>
+                    <div class="btnTable btnTableIcon btnTable-danger" style="margin-left: 10px; flex-shrink: 0;">
+                        <a class="ic_removeAll layer-delete" data-layer-name="${layerName}" href="#" title="Delete layer"></a>
+                    </div>
+                </div>
+            `;
+            $('#layerListContainer').append(layerHtml);
+        });
+        GUI.switchery();
+        $('.layer-toggle').on('change', function() {
+            const layerName = $(this).attr('data-layer-name');
+            const isChecked = $(this).is(':checked');
+            map.getLayers().forEach(layer => {
+                if (layer.get('name') === layerName && layer.get('is_custom_overlay')) {
+                    layer.setVisible(isChecked);
+                }
+            });
+        });
+        $('.layer-delete').on('click', function(event) {
+            event.preventDefault();
+            const layerName = $(this).attr('data-layer-name');
+            if (dialog.confirm(i18n.getMessage('layerConfirmDelete'))) {
+                removeLayerFromDisk(layerName);
+            }
+        });
+    }
+
+    function saveLayerToDisk(layer) {
+        let customOverlayList = store.get('custom_overlay_list');
+        if (customOverlayList === undefined) {
+            customOverlayList = [];
+        }
+        const writer = new GeoJSON();
+        const geojsonStr = writer.writeFeatures(layer.getSource().getFeatures());
+        const layerName = layer.get('name');
+        customOverlayList = customOverlayList.filter(l => l.name !== layerName);
+        const savedLayer = {
+            name: layerName,
+            layer_data: geojsonStr,
+            visible: layer.getVisible()
+        };
+        customOverlayList.push(savedLayer);
+        store.set('custom_overlay_list', customOverlayList);
+        GUI.log(`Saved layer: ${layerName}`);
+    }
+
+    function removeLayerFromDisk(layerName) {
+        let customOverlayList = store.get('custom_overlay_list');
+        if (!customOverlayList) return;
+        customOverlayList = customOverlayList.filter(l => l.name !== layerName);
+        store.set('custom_overlay_list', customOverlayList);
+        const layersToRemove = [];
+        map.getLayers().forEach(layer => {
+            if (layer.get('name') === layerName && layer.get('is_custom_overlay')) {
+                layersToRemove.push(layer);
+            }
+        });
+        layersToRemove.forEach(layer => map.removeLayer(layer));
+        updateLayerListUI();
+        GUI.log(`Removed layer: ${layerName}`);
+    }
+
+    function createGeoLayer(features, fileName, visible) {
+        const vectorSource = new VectorSource({ features: features });
+        vectorSource.forEachFeature(function(feature) {
+            if (!feature.get('name')) feature.set('name', fileName);
+            feature.set('show_info_on_hover', true);
+        });
+        const vectorLayer = new VectorLayer({ source: vectorSource, visible: visible });
+        vectorLayer.set('name', fileName);
+        vectorLayer.set('is_custom_overlay', true);
+        vectorLayer.set('no_interaction', true);
+        map.addLayer(vectorLayer);
+        return vectorLayer;
+    }
+
+    function addGeoLayerToMap(features, fileName, visible = true) {
+        const vectorLayer = createGeoLayer(features, fileName, visible);
+        saveLayerToDisk(vectorLayer);
+        updateLayerListUI();
+        GUI.log(`Added layer: ${fileName}`);
+    }
+
+    async function loadGeoFile(filePath) {
+        const fileName = filePath.split('/').pop().split('\\').pop();
+        const ext = fileName.split('.').pop().toLowerCase();
+
+        const response = await globalThis.electronAPI.readFile(filePath, ext === 'kmz' ? null : undefined);
+        if (response.error) {
+            GUI.log(`Error reading file: ${response.error}`);
+            dialog.alert(i18n.getMessage('layerLoadError'));
+            return;
+        }
+
+        let format;
+        let fileData = response.data;
+
+        switch (ext) {
+            case 'kmz': fileData = extractKmlFromKmz(response.data); format = new KML(); break;
+            case 'kml': format = new KML(); break;
+            case 'json':
+            case 'geojson': format = new GeoJSON(); break;
+            case 'gpx': format = new GPX(); break;
+            case 'igc': format = new IGC(); break;
+            case 'topojson': format = new TopoJSON(); break;
+            default: throw new Error('Unsupported file format');
+        }
+
+        const features = format.readFeatures(fileData, {
+            dataProjection: 'EPSG:4326',
+            featureProjection: 'EPSG:3857'
+        });
+
+        if (features.length === 0) throw new Error('No features found in file');
+
+        addGeoLayerToMap(features, fileName);
+        GUI.log(`Loaded ${features.length} features from ${fileName}`);
+    }
+
+    /////////////////////////////////////////////
+    //
     // Manage Waypoint
     //
     /////////////////////////////////////////////
+
+    // Show/hide location buttons based on waypoint presence
+    function updateLocationButtonsVisibility() {
+        if (mission.isEmpty() && !multimissionCount) {
+            $('#centerOnCurrentLocation').fadeIn(300);
+        } else {
+            $('#centerOnCurrentLocation').fadeOut(300);
+        }
+    }
 
     function removeAllWaypoints() {
         mission.reinit();
@@ -1467,8 +1708,10 @@ function iconKey(filename) {
         clearEditForm();
         updateTotalInfo();
         clearFilename();
+        updateLocationButtonsVisibility();
     }
 
+    
     function addWaypointMarker(waypoint, isEdit=false) {
         let coord = fromLonLat([waypoint.getLonMap(), waypoint.getLatMap()]);
         var iconFeature = new Feature({
@@ -1605,10 +1848,6 @@ function iconKey(filename) {
                 addFwApproach(element.getLonMap(), element.getLatMap(), FC.FW_APPROACH.get()[FC.SAFEHOMES.getMaxSafehomeCount() + element.getMultiMissionIdx()], lines);
             }
         });
-        //reset text position
-        if (textGeom) {
-            textGeom.setCoordinates(map.getCoordinateFromPixel([0,0]));
-        }
         let lengthMission = mission.getDistance(true);
 
         if (disableMarkerEdit) {
@@ -2198,14 +2437,16 @@ function iconKey(filename) {
 
             var map = evt.map;
 
+            const isInteractable = (layer) => layer?.get('no_interaction') !== true;
+
             var feature = map.forEachFeatureAtPixel(evt.pixel,
                 function (feature, layer) {
-                    return feature;
+                    return isInteractable(layer) ? feature : null;
                 });
 
             tempMarker = map.forEachFeatureAtPixel(evt.pixel,
                 function (feature, layer) {
-                    return layer;
+                    return isInteractable(layer) ? layer : null;
                 });
 
             if (feature) {
@@ -2479,6 +2720,76 @@ function iconKey(filename) {
         }
 
         //////////////////////////////////////////////////////////////////////////
+        // Load previously saved GEO files from electron store
+        //////////////////////////////////////////////////////////////////////////
+        if (store.get('custom_overlay_list') === undefined) {
+            store.set('custom_overlay_list', []);
+        }
+
+        for (let savedLayer of store.get('custom_overlay_list')) {
+            const features = new GeoJSON().readFeatures(savedLayer.layer_data, {
+                dataProjection: 'EPSG:4326',
+                featureProjection: map.getView().getProjection()
+            });
+            createGeoLayer(features, savedLayer.name, savedLayer.visible !== false);
+        }
+        updateLayerListUI();
+
+        //////////////////////////////////////////////////////////////////////////
+        // Add drag-and-drop support for GEO files
+        //////////////////////////////////////////////////////////////////////////
+        const dragAndDropInteraction = new DragAndDrop({
+            formatConstructors: [
+                GPX,
+                GeoJSON,
+                IGC,
+                KML,
+                KMZ,
+                TopoJSON,
+            ],
+        });
+
+        dragAndDropInteraction.on('addfeatures', function(event) {
+            const fileName = event.file.name;
+            GUI.log(`Drag-and-dropped file: ${fileName}`);
+            addGeoLayerToMap(event.features, fileName);
+        });
+
+        map.addInteraction(dragAndDropInteraction);
+
+        //////////////////////////////////////////////////////////////////////////
+        // Feature hover info display
+        //////////////////////////////////////////////////////////////////////////
+        const displayFeatureInfo = function(pixel) {
+            const features = [];
+            const geoInfoEl = document.getElementById('geo_info');
+            map.forEachFeatureAtPixel(pixel, function(feature) {
+                if (feature.get('show_info_on_hover') === true) {
+                    features.push(feature);
+                }
+            });
+
+            if (features.length > 0) {
+                const info = [];
+                for (const feature of features) {
+                    info.push(feature.get('name') || 'Unknown');
+                }
+                geoInfoEl.innerHTML = info.join(', ');
+                geoInfoEl.style.opacity = '1';
+            } else {
+                geoInfoEl.style.opacity = '0';
+            }
+        };
+
+        map.on('pointermove', function(evt) {
+            if (evt.dragging) {
+                return;
+            }
+            const pixel = map.getEventPixel(evt.originalEvent);
+            displayFeatureInfo(pixel);
+        });
+
+        //////////////////////////////////////////////////////////////////////////
         // Map on-click behavior definition
         //////////////////////////////////////////////////////////////////////////
         map.on('click', function (evt) {
@@ -2522,11 +2833,11 @@ function iconKey(filename) {
 
                 let P3Value = selectedMarker.getP3();
 
-                changeSwitch($('#pointP3Alt'), TABS.mission_control.isBitSet(P3Value, MWNP.P3.ALT_TYPE));
-                changeSwitch($('#pointP3UserAction1'), TABS.mission_control.isBitSet(P3Value, MWNP.P3.USER_ACTION_1));
-                changeSwitch($('#pointP3UserAction2'), TABS.mission_control.isBitSet(P3Value, MWNP.P3.USER_ACTION_2));
-                changeSwitch($('#pointP3UserAction3'), TABS.mission_control.isBitSet(P3Value, MWNP.P3.USER_ACTION_3));
-                changeSwitch($('#pointP3UserAction4'), TABS.mission_control.isBitSet(P3Value, MWNP.P3.USER_ACTION_4));
+                changeSwitch($('#pointP3Alt'), missionControlTab.isBitSet(P3Value, MWNP.P3.ALT_TYPE));
+                changeSwitch($('#pointP3UserAction1'), missionControlTab.isBitSet(P3Value, MWNP.P3.USER_ACTION_1));
+                changeSwitch($('#pointP3UserAction2'), missionControlTab.isBitSet(P3Value, MWNP.P3.USER_ACTION_2));
+                changeSwitch($('#pointP3UserAction3'), missionControlTab.isBitSet(P3Value, MWNP.P3.USER_ACTION_3));
+                changeSwitch($('#pointP3UserAction4'), missionControlTab.isBitSet(P3Value, MWNP.P3.USER_ACTION_4));
 
                 var altitudeMeters = app.ConvertCentimetersToMeters(selectedMarker.getAlt());
 
@@ -2544,7 +2855,7 @@ function iconKey(filename) {
                         selectedMarker.setAlt(returnAltitude);
 
                         /*
-                        if (TABS.mission_control.isBitSet(P3Value, MWNP.P3.ALT_TYPE)) {
+                        if (missionControlTab.isBitSet(P3Value, MWNP.P3.ALT_TYPE)) {
                             if (!selectedFwApproachWp.getIsSeaLevelRef()) {
                                 selectedFwApproachWp.setApproachDirection(selectedFwApproachWp.getApproachDirection() + elevationAtWP * 100);
                                 selectedFwApproachWp.setLandAltAsl(selectedFwApproachWp.getLandAltAsl() + elevationAtWP * 100);
@@ -2552,7 +2863,7 @@ function iconKey(filename) {
 
                         }
                         */
-                        selectedFwApproachWp.setIsSeaLevelRef(TABS.mission_control.isBitSet(P3Value, MWNP.P3.ALT_TYPE) ? 1 : 0);
+                        selectedFwApproachWp.setIsSeaLevelRef(missionControlTab.isBitSet(P3Value, MWNP.P3.ALT_TYPE) ? 1 : 0);
                         $('#wpApproachAlt').val(selectedFwApproachWp.getApproachAltAsl());
                         $('#wpLandAlt').val(selectedFwApproachWp.getLandAltAsl);
                         $('#wpLandAltM').text(selectedFwApproachWp.getLandAltAsl() / 100 + " m");
@@ -2683,6 +2994,7 @@ function iconKey(filename) {
                     refreshLayers();
                     plotElevation();
                 }
+                updateLocationButtonsVisibility();
             }
             //mission.missionDisplayDebug();
             if (selectedFeature && tempMarker.kind != "waypoint") clearEditForm();  // CR15
@@ -2728,96 +3040,27 @@ function iconKey(filename) {
         /////////////////////////////////////////////
         // Callback to show/hide menu boxes
         /////////////////////////////////////////////
-        $('#showHideActionButton').on('click', function () {
-            var src = ($(this).children().attr('class') === 'ic_hide')
-                ? 'ic_show'
-                : 'ic_hide';
-            $(this).children().attr('class', src);
-            if ($(this).children().attr('class') === 'ic_hide') {
-                $('#ActionContent').fadeIn(300);
-            }
-            else {
-                $('#ActionContent').fadeOut(300);
-            }
-        });
 
-        $('#showHideInfoButton').on('click', function () {
-            var src = ($(this).children().attr('class') === 'ic_hide')
-                ? 'ic_show'
-                : 'ic_hide';
-            $(this).children().attr('class', src);
-            if ($(this).children().attr('class') === 'ic_hide') {
-                $('#InfoContent').fadeIn(300);
-            }
-            else {
-                $('#InfoContent').fadeOut(300);
-            }
-        });
+        function setupShowHidePanel(buttonId, contentId) {
+            $(`#${buttonId}`).on('click', function () {
+                const wasVisible = $(this).children().attr('class') === 'ic_hide';
+                $(this).children().attr('class', wasVisible ? 'ic_show' : 'ic_hide');
+                $(`#${contentId}`)[wasVisible ? 'fadeOut' : 'fadeIn'](300);
+            });
+        }
 
-        $('#showHideSafehomeButton').on('click', function () {
-            var src = ($(this).children().attr('class') === 'ic_hide')
-                ? 'ic_show'
-                : 'ic_hide';
-            $(this).children().attr('class', src);
-            if ($(this).children().attr('class') === 'ic_hide') {
-                $('#SafehomeContent').fadeIn(300);
-            }
-            else {
-                $('#SafehomeContent').fadeOut(300);
-            }
-        });
+        // Ensure ActionContent is visible initially
+        if ($('#showHideActionButton').children().attr('class') === 'ic_hide') {
+            $('#ActionContent').show();
+        }
 
-        $('#showHideHomeButton').on('click', function () {
-            var src = ($(this).children().attr('class') === 'ic_hide')
-                ? 'ic_show'
-                : 'ic_hide';
-            $(this).children().attr('class', src);
-            if ($(this).children().attr('class') === 'ic_hide') {
-                $('#HomeContent').fadeIn(300);
-            }
-            else {
-                $('#HomeContent').fadeOut(300);
-            }
-        });
-
-        $('#showHideWPeditButton').on('click', function () {
-            var src = ($(this).children().attr('class') === 'ic_hide')
-                ? 'ic_show'
-                : 'ic_hide';
-            $(this).children().attr('class', src);
-            if ($(this).children().attr('class') === 'ic_hide') {
-                $('#WPeditContent').fadeIn(300);
-            }
-            else {
-                $('#WPeditContent').fadeOut(300);
-            }
-        });
-
-        $('#showHideMultimissionButton').on('click', function () {
-            var src = ($(this).children().attr('class') === 'ic_hide')
-                ? 'ic_show'
-                : 'ic_hide';
-            $(this).children().attr('class', src);
-            if ($(this).children().attr('class') === 'ic_hide') {
-                $('#multimissionContent').fadeIn(300);
-            }
-            else {
-                $('#multimissionContent').fadeOut(300);
-            }
-        });
-
-        $('#showHideGeozonesButton').on('click', function () {
-            var src = ($(this).children().attr('class') === 'ic_hide')
-                ? 'ic_show'
-                : 'ic_hide';
-            $(this).children().attr('class', src);
-            if ($(this).children().attr('class') === 'ic_hide') {
-                $('#geozoneContent').fadeIn(300);
-            }
-            else {
-                $('#geozoneContent').fadeOut(300);
-            }
-        });
+        setupShowHidePanel('showHideActionButton',      'ActionContent');
+        setupShowHidePanel('showHideInfoButton',        'InfoContent');
+        setupShowHidePanel('showHideSafehomeButton',    'SafehomeContent');
+        setupShowHidePanel('showHideHomeButton',        'HomeContent');
+        setupShowHidePanel('showHideWPeditButton',      'WPeditContent');
+        setupShowHidePanel('showHideMultimissionButton','multimissionContent');
+        setupShowHidePanel('showHideGeozonesButton',    'geozoneContent');
 
         /////////////////////////////////////////////
         // Callback for Waypoint edition
@@ -2919,10 +3162,10 @@ function iconKey(filename) {
                 var P3Value = selectedMarker.getP3();
 
                 if (disableMarkerEdit) {
-                    changeSwitch($('#pointP3Alt'), TABS.mission_control.isBitSet(P3Value, MWNP.P3.ALT_TYPE));
+                    changeSwitch($('#pointP3Alt'), missionControlTab.isBitSet(P3Value, MWNP.P3.ALT_TYPE));
                 }
 
-                P3Value = TABS.mission_control.setBit(P3Value, MWNP.P3.ALT_TYPE, $('#pointP3Alt').prop("checked"));
+                P3Value = missionControlTab.setBit(P3Value, MWNP.P3.ALT_TYPE, $('#pointP3Alt').prop("checked"));
                 (async () => {
                     const elevationAtWP = await selectedMarker.getElevation(globalSettings);
                     $('#elevationValueAtWP').text(elevationAtWP);
@@ -3005,10 +3248,10 @@ function iconKey(filename) {
         $('#pointP3UserAction1').on('change', function(event){
             if (selectedMarker) {
                 if (disableMarkerEdit) {
-                    changeSwitch($('#pointP3UserAction1'), TABS.mission_control.isBitSet(selectedMarker.getP3(), MWNP.P3.USER_ACTION_1));
+                    changeSwitch($('#pointP3UserAction1'), missionControlTab.isBitSet(selectedMarker.getP3(), MWNP.P3.USER_ACTION_1));
                 }
 
-                var P3Value = TABS.mission_control.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_1, $('#pointP3UserAction1').prop("checked"));
+                var P3Value = missionControlTab.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_1, $('#pointP3UserAction1').prop("checked"));
                 selectedMarker.setP3(P3Value);
 
                 mission.updateWaypoint(selectedMarker);
@@ -3020,10 +3263,10 @@ function iconKey(filename) {
         $('#pointP3UserAction2').on('change', function(event){
             if (selectedMarker) {
                 if (disableMarkerEdit) {
-                    changeSwitch($('#pointP3UserAction2'), TABS.mission_control.isBitSet(selectedMarker.getP3(), MWNP.P3.USER_ACTION_2));
+                    changeSwitch($('#pointP3UserAction2'), missionControlTab.isBitSet(selectedMarker.getP3(), MWNP.P3.USER_ACTION_2));
                 }
 
-                var P3Value = TABS.mission_control.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_2, $('#pointP3UserAction2').prop("checked"));
+                var P3Value = missionControlTab.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_2, $('#pointP3UserAction2').prop("checked"));
                 selectedMarker.setP3(P3Value);
 
                 mission.updateWaypoint(selectedMarker);
@@ -3035,10 +3278,10 @@ function iconKey(filename) {
         $('#pointP3UserAction3').on('change', function(event){
             if (selectedMarker) {
                 if (disableMarkerEdit) {
-                    changeSwitch($('#pointP3UserAction3'), TABS.mission_control.isBitSet(selectedMarker.getP3(), MWNP.P3.USER_ACTION_3));
+                    changeSwitch($('#pointP3UserAction3'), missionControlTab.isBitSet(selectedMarker.getP3(), MWNP.P3.USER_ACTION_3));
                 }
 
-                var P3Value = TABS.mission_control.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_3, $('#pointP3UserAction3').prop("checked"));
+                var P3Value = missionControlTab.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_3, $('#pointP3UserAction3').prop("checked"));
                 selectedMarker.setP3(P3Value);
 
                 mission.updateWaypoint(selectedMarker);
@@ -3050,10 +3293,10 @@ function iconKey(filename) {
         $('#pointP3UserAction4').on('change', function(event){
             if (selectedMarker) {
                 if (disableMarkerEdit) {
-                    changeSwitch($('#pointP3UserAction4'), TABS.mission_control.isBitSet(selectedMarker.getP3(), MWNP.P3.USER_ACTION_4));
+                    changeSwitch($('#pointP3UserAction4'), missionControlTab.isBitSet(selectedMarker.getP3(), MWNP.P3.USER_ACTION_4));
                 }
 
-                var P3Value = TABS.mission_control.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_4, $('#pointP3UserAction4').prop("checked"));
+                var P3Value = missionControlTab.setBit(selectedMarker.getP3(), MWNP.P3.USER_ACTION_4, $('#pointP3UserAction4').prop("checked"));
                 selectedMarker.setP3(P3Value);
 
                 mission.updateWaypoint(selectedMarker);
@@ -3665,6 +3908,145 @@ function iconKey(filename) {
             }
         });
 
+        // Address search button
+        $(document).on('click', '#searchAddressButton, #searchAddress', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Remove any existing dialog
+            $('#addressSearchDialog, #addressSearchBackdrop').remove();
+
+            // Create dialog
+            const addressDialog = $(`
+                <div id="addressSearchBackdrop" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                     background: rgba(0,0,0,0.5); z-index: 10000;">
+                    <div id="addressSearchDialog" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                         background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+                        <h3>Search for Location</h3>
+                        <input type="text" id="addressInput" style="width: 280px; padding: 8px 12px; margin: 10px 0; border: 1px solid #ccc; font-size: 14px;" 
+                               placeholder="Enter address, city, or coordinates" value="" autocomplete="off">
+                        <div style="margin-top: 15px; text-align: right;">
+                            <button id="searchCancel" style="padding: 8px 16px; margin-right: 10px;">Cancel</button>
+                            <button id="searchOK" style="padding: 8px 16px; background: #007cba; color: white; border: none;">Search</button>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            $('body').append(addressDialog);
+
+          
+            // Search function
+            function doSearch() {
+                const address = $('#addressInput').val().trim();
+                $('#addressSearchBackdrop').remove();
+
+                if (address) {
+                    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+                    
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.length > 0) {
+                                const result = data[0];
+                                const coord = fromLonLat([parseFloat(result.lon), parseFloat(result.lat)]);
+                                map.getView().setCenter(coord);
+                                dialog.alert(`Found: ${result.display_name}`);
+                            } else {
+                                dialog.alert('Address not found.');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Search failed:', err);
+                            dialog.alert('Search failed. Check your connection.');
+                        });
+                }
+
+                setTimeout(() => {
+                    const input = document.getElementById('addressInput');
+                    input?.focus();
+                    input?.select();
+                }, 50);
+
+            }
+
+            // Event handlers
+            $('#searchOK').click(doSearch);
+            $('#searchCancel').click(() => $('#addressSearchBackdrop').remove());
+            $('#addressInput').keypress(function(e) {
+                if (e.which === 13) doSearch();
+            });
+            
+            // Only close on backdrop click, not dialog content click
+            $('#addressSearchBackdrop').click(function(e) {
+                if (e.target === this) {
+                    $('#addressSearchBackdrop').remove();
+                }
+            });
+            
+            // Prevent clicks inside the dialog from closing it
+            $('#addressSearchDialog').click(function(e) {
+                e.stopPropagation();
+            });
+        });
+
+        $(document).on('click', '#centerOnDroneButton, #centerOnDrone', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (lastGpsPos && map && map.getView()) {
+                map.getView().setCenter(lastGpsPos);
+            }
+        });
+
+        // Keyboard shortcuts (ignored when typing in inputs):
+        //  C -> center on latest GPS fix
+        //  Ctrl+L -> load mission from file
+        //  Ctrl+S -> save mission to file
+        //  Ctrl+D -> delete all points
+        //  Ctrl+A -> address search dialog
+        $(document).off('keydown.mcCenter').on('keydown.mcCenter', function (e) {
+            const key = (e.key || '').toLowerCase();
+            const target = e.target;
+            const isTyping = target && (
+                target.tagName === 'INPUT' ||
+                target.tagName === 'TEXTAREA' ||
+                target.isContentEditable ||
+                target.tagName === 'SELECT'
+            );
+            if (isTyping) return;
+
+            // Center on GPS fix (plain C or Ctrl+C)
+            if (!e.repeat && key === 'c') {
+                if (lastGpsPos && map && map.getView()) {
+                    map.getView().setCenter(lastGpsPos);
+                }
+            }
+
+            // Ctrl+L: open mission from file
+            if (!e.repeat && e.ctrlKey && key === 'l') {
+                e.preventDefault();
+                $('#loadFileMissionButton').trigger('click');
+            }
+
+            // Ctrl+S: save mission to file
+            if (!e.repeat && e.ctrlKey && key === 's') {
+                e.preventDefault();
+                $('#saveFileMissionButton').trigger('click');
+            }
+
+            // Ctrl+D: delete all points
+            if (!e.repeat && e.ctrlKey && key === 'd') {
+                e.preventDefault();
+                $('#removeAllPoints').trigger('click');
+            }
+
+            // Ctrl+A: address search
+            if (!e.repeat && e.ctrlKey && key === 'a') {
+                e.preventDefault();
+                $('#searchAddressButton').trigger('click');
+            }
+        });
+
         $('#removePoint').on('click', function () {
             if (selectedMarker) {
                 if (mission.isJumpTargetAttached(selectedMarker)) {
@@ -3687,6 +4069,7 @@ function iconKey(filename) {
                         clearEditForm();
                         refreshLayers();
                         plotElevation();
+                        updateLocationButtonsVisibility();
                     }
                 }
                 else {
@@ -3701,13 +4084,14 @@ function iconKey(filename) {
                     plotElevation();
                 }
                 updateMultimissionState();
+                updateLocationButtonsVisibility();
             }
         });
 
         /////////////////////////////////////////////
         // Callback for Save/load buttons
         /////////////////////////////////////////////
-        $('#loadFileMissionButton').on('click', function () {
+        $('#loadFileMissionButton').off('click').on('click', function () {
             if (!fileLoadMultiMissionCheck()) return;
 
             if (markers.length && !dialog.confirm(i18n.getMessage('confirm_delete_all_points'))) return;
@@ -3716,7 +4100,6 @@ function iconKey(filename) {
             };
             dialog.showOpenDialog(options).then(result => {
                 if (result.canceled) {
-                    console.log('No file selected');
                     return;
                 }
                 if (result.filePaths.length == 1) {
@@ -3725,7 +4108,7 @@ function iconKey(filename) {
             })
         });
 
-        $('#saveFileMissionButton').on('click', function () {
+        $('#saveFileMissionButton').off('click').on('click', function () {
             var options = {
                 filters: [ { name: "Mission file", extensions: ['mission'] } ]
             };
@@ -3733,7 +4116,11 @@ function iconKey(filename) {
                 if (result.canceled) {
                     return;
                 }
-                saveMissionFile(result.filePath);
+                let filePath = result.filePath;
+                if (!filePath.endsWith('.mission')) {
+                    filePath += '.mission';
+                }
+                saveMissionFile(filePath);
             });
         });
 
@@ -3774,6 +4161,38 @@ function iconKey(filename) {
             GUI.log(i18n.getMessage('startSendPoint'));
             sendWaypointsToFC(true);
         });
+
+        /////////////////////////////////////////////
+        // Callback for Layer management buttons
+        /////////////////////////////////////////////
+        $('#loadGeoFileButton').on('click', async function() {
+            const options = {
+                filters: [
+                    { name: 'GEO Files', extensions: ['kml', 'kmz', 'geojson', 'json', 'gpx', 'igc', 'topojson'] },
+                    { name: 'All Files', extensions: ['*'] }
+                ]
+            };
+
+            let result;
+            try {
+                result = await dialog.showOpenDialog(options);
+            } catch (error) {
+                GUI.log(`Error opening file dialog: ${error.message || error}`);
+                dialog.alert(i18n.getMessage('layerLoadError'));
+                return;
+            }
+
+            if (result.canceled || result.filePaths.length !== 1) return;
+
+            try {
+                await loadGeoFile(result.filePaths[0]);
+            } catch (error) {
+                GUI.log(`Error loading file: ${error.message}`);
+                dialog.alert(i18n.getMessage('layerParseError'));
+            }
+        });
+
+        setupShowHidePanel('showHideLayersButton', 'layerContent');
 
         /////////////////////////////////////////////
         // Callback for settings
@@ -3969,6 +4388,7 @@ function iconKey(filename) {
                     mission.update(true, true);
                 }
                 updateMultimissionState();
+                updateLocationButtonsVisibility();
 
                 if (Object.keys(mission.getCenter()).length !== 0) {
                     var coord = fromLonLat([mission.getCenter().lon / 10000000 , mission.getCenter().lat / 10000000]);
@@ -4061,15 +4481,17 @@ function iconKey(filename) {
         var builder = new xml2js.Builder({ 'rootName': 'mission', 'renderOpts': { 'pretty': true, 'indent': '\t', 'newline': '\n' } });
         var xml = builder.buildObject(data);
         xml = xml.replace(/missionitem mission/g, 'meta mission');
-        fs.writeFile(filename, xml, (err) => {
+
+        window.electronAPI.writeFile(filename, xml).then((err) => {
             if (err) {
                 GUI.log(i18n.getMessage('ErrorWritingFile'));
                 return console.error(err);
             }
+
+            let sFilename = String(filename.split('\\').pop().split('/').pop());
+            GUI.log(sFilename + i18n.getMessage('savedSuccessfully'));
+            updateFilename(sFilename);
         });
-        let sFilename = String(filename.split('\\').pop().split('/').pop());
-        GUI.log(sFilename + i18n.getMessage('savedSuccessfully'));
-        updateFilename(sFilename);
     }
 
     /////////////////////////////////////////////
@@ -4153,6 +4575,7 @@ function iconKey(filename) {
                 mission.update(false, true);
                 refreshLayers();
                 $('#MPeditPoint').fadeOut(300);
+                updateLocationButtonsVisibility();
             }
         ]);
         saveChainer.execute();
@@ -4198,7 +4621,7 @@ function iconKey(filename) {
     function checkAltElevSanity(resetAltitude, checkAltitude, elevation, AbsAltCheck) {
         let groundClearance = "NO HOME";
         let altitude = checkAltitude;
-        AbsAltCheck = (typeof AbsAltCheck == "boolean") ? AbsAltCheck : TABS.mission_control.isBitSet(AbsAltCheck, MWNP.P3.ALT_TYPE);
+        AbsAltCheck = (typeof AbsAltCheck == "boolean") ? AbsAltCheck : missionControlTab.isBitSet(AbsAltCheck, MWNP.P3.ALT_TYPE);
 
         if (AbsAltCheck) {
             if (checkAltitude < 100 * elevation) {
@@ -4436,13 +4859,13 @@ function iconKey(filename) {
       };
 };
 
-TABS.mission_control.isBitSet = function(bits, testBit) {
+missionControlTab.isBitSet = function(bits, testBit) {
     let isTrue = ((bits & (1 << testBit)) != 0);
 
     return isTrue;
 }
 
-TABS.mission_control.setBit = function(bits, bit, value) {
+missionControlTab.setBit = function(bits, bit, value) {
     return value ? bits |= (1 << bit) : bits &= ~(1 << bit);
 }
 
@@ -4456,6 +4879,8 @@ TABS.mission_control.setBit = function(bits, bit, value) {
     // }
 // }
 
-TABS.mission_control.cleanup = function (callback) {
+missionControlTab.cleanup = function (callback) {
     if (callback) callback();
 };
+
+export default missionControlTab;
