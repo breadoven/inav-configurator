@@ -8,6 +8,9 @@ const searchTab = { };
 // Tabs that have no corresponding .js file and must be skipped during JS indexing.
 const jslessTab = new Set(["debug_trace", "options"]);
 
+// Tabs that have no corresponding .js file and must be skipped during JS indexing.
+const jslessTab = new Set(["debug_trace", "options"]);
+
 const tabNames = [
  "adjustments",
  "advanced_tuning",
