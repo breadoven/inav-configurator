@@ -1630,6 +1630,23 @@ OSD.constants = {
                         }
                     }
                 },
+                {   // CR164
+                    name: 'AUTO SPEED',
+                    id: 170,
+                    preview: function(osd_data) {
+                        // 3 chars
+                        switch (OSD.data.preferences.units) {
+                            case 0: // Imperial
+                            case 2: // Metric + MPH
+                            case 3: // UK
+                                return FONT.embed_dot('G:127') + FONT.symbol(SYM.MPH_3D);
+                            case 4: // GA
+                                return FONT.embed_dot('G:110') + FONT.symbol(SYM.KT_3D);
+                            default: // Metric
+                                return FONT.embed_dot('G:204') + FONT.symbol(SYM.KMH_3D);
+                        }
+                    }
+                },  // CR164
                 {
                     name: 'GPS_MAX_SPEED',
                     id: 125,
@@ -2442,7 +2459,7 @@ OSD.reload = function(callback) {
                 MSP.promise(MSPCodes.MSP2_INAV_OSD_PREFERENCES).then(function (resp) {
                     OSD.data.supported = true;
                     OSD.msp.decodePreferences(resp);
-                    
+
                     MSP.promise(MSPCodes.MSP2_INAV_CUSTOM_OSD_ELEMENTS).then(() => {
                         mspHelper.loadOsdCustomElements(() => {
                             MSP.promise(MSPCodes.MSP2_INAV_LOGIC_CONDITIONS_CONFIGURED).then(() => {
@@ -2459,7 +2476,7 @@ OSD.reload = function(callback) {
         });
     });
 
-    
+
 };
 
 OSD.updateSelectedLayout = function(new_layout) {
@@ -3697,13 +3714,13 @@ osdTab.initialize = function (callback) {
                 $fontPicker.removeClass('active');
                 $(this).addClass('active');
                 store.set('osd_font', $(this).data('font-file'));
-                
+
                 import(`./../resources/osd/analogue/${$(this).data('font-file')}.mcm?raw`).then(({default: data}) => {
                     FONT.parseMCMFontFile(data);
                     FONT.preview($preview);
                     OSD.GUI.update();
                 });
-                
+
             });
 
             // load the last selected font when we change tabs

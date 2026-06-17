@@ -5,6 +5,8 @@ import i18n from './../js/localization';
 
 const searchTab = { };
 
+// Tabs that have no corresponding .js file and must be skipped during JS indexing.
+const jslessTab = new Set(["debug_trace", "options"]);
 
 const tabNames = [
  "adjustments",
@@ -81,8 +83,8 @@ const tabNames = [
       result.addEventListener('click', simClick, false);
     }
   }
-  
-  
+
+
   searchTab.getMessages = function () {
     import(`../locale/en/messages.json`).then(({default: messages}) => {
         this.messages = messages;
@@ -91,9 +93,9 @@ const tabNames = [
     });
 
   }
-  
+
   searchTab.geti18nHTML = function (filename, filecontents) {
-  
+
     const parser = new DOMParser();
     const htmlDoc = parser.parseFromString(filecontents, 'text/html');
     var hasDataI18n = htmlDoc.querySelectorAll('[data-i18n]:not([data-i18n=""])');
@@ -127,7 +129,7 @@ const tabNames = [
 
   searchTab.geti18nJs = function (filename, filecontents) {
     var re = /(?:data-i18n=|i18n.getMessage\()["']([^"']*)['"]/g
- 
+
     let match;
     while ((match = re.exec(filecontents))) {
       const key = match[1];
@@ -140,16 +142,18 @@ const tabNames = [
 
 
   searchTab.indexTab =  async function indexTab(tabName) {
-    import(`./${tabName}.js?raw`).then(({default: javascript}) => {
-        this.geti18nJs(tabName, javascript);
-    }).catch(error => console.error(`Failed to index JS for tab ${tabName}:`, error));;
+    if (!jslessTab.has(tabName)) {
+        import(`./${tabName}.js?raw`).then(({default: javascript}) => {
+            this.geti18nJs(tabName, javascript);
+        }).catch(error => console.error(`Failed to index JS for tab ${tabName}:`, error));
+    }
 
     import(`./${tabName}.html?raw`).then(({default: html}) => {
         this.geti18nHTML(tabName, html);
     }).catch(error => console.error(`Failed to index HTML for tab ${tabName}:`, error));;
 
   };
-  
+
 
 searchTab.initialize = function (callback) {
     var self = this;

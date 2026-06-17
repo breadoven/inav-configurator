@@ -326,7 +326,7 @@ const LOGIC_OPERATORS = {
         operandType: "Set Flight Parameter",
         hasOperand: [true, false],
         output: "raw"
-    },        
+    },
     53: {
         name: "Disable GPS Sensor Fix",
         operandType: "Set Flight Parameter",
@@ -341,6 +341,12 @@ const LOGIC_OPERATORS = {
     },
     55: {
         name: "Gimbal sensitivity",
+        operandType: "Set Flight Parameter",
+        hasOperand: [true, false],
+        output: "boolean"
+    },
+    61: {   // CR164
+        name: "Disable Auto Speed Airspeed",
         operandType: "Set Flight Parameter",
         hasOperand: [true, false],
         output: "boolean"

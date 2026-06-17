@@ -481,7 +481,7 @@ var SerialBackend = (function () {
             /*
             * Init PIDs bank with a length that depends on the version
             */
-            let pidCount = 11;
+            let pidCount = 12;  // CR164
 
             for (let i = 0; i < pidCount; i++) {
                 FC.PIDs.push(new Array(4));
