@@ -8,9 +8,6 @@ const searchTab = { };
 // Tabs that have no corresponding .js file and must be skipped during JS indexing.
 const jslessTab = new Set(["debug_trace", "options"]);
 
-// Tabs that have no corresponding .js file and must be skipped during JS indexing.
-const jslessTab = new Set(["debug_trace", "options"]);
-
 const tabNames = [
  "adjustments",
  "advanced_tuning",
@@ -151,9 +148,9 @@ const tabNames = [
         }).catch(error => console.error(`Failed to index JS for tab ${tabName}:`, error));
     }
 
-    import(`./${tabName}.html?raw`).then(({default: html}) => {
-        this.geti18nHTML(tabName, html);
-    }).catch(error => console.error(`Failed to index HTML for tab ${tabName}:`, error));;
+    // import(`./${tabName}.html?raw`).then(({default: html}) => {
+        // this.geti18nHTML(tabName, html);
+    // }).catch(error => console.error(`Failed to index HTML for tab ${tabName}:`, error));;
 
   };
 

@@ -51,13 +51,13 @@ if (store.get('disable_3d_acceleration', false)) {
 
 // Enable remote debugging in development mode
 // This allows chrome://inspect and Playwright CDP connections
-if (!app.isPackaged) {  // Development mode (not packaged)
-  const port = process.env.CDP_PORT ?? '9222';
-  app.commandLine.appendSwitch('remote-debugging-port', port);
-  console.log(`[cdp] Remote debugging enabled on port ${port}`);
-  console.log(`   Chrome DevTools: chrome://inspect`);
-  console.log(`   CDP Endpoint: http://localhost:${port}`);
-}
+// if (!app.isPackaged) {  // Development mode (not packaged)
+  // const port = process.env.CDP_PORT ?? '9222';
+  // app.commandLine.appendSwitch('remote-debugging-port', port);
+  // console.log(`[cdp] Remote debugging enabled on port ${port}`);
+  // console.log(`   Chrome DevTools: chrome://inspect`);
+  // console.log(`   CDP Endpoint: http://localhost:${port}`);
+// }
 
 // In Electron the bluetooth device chooser didn't exist, so we have to build our own
 function createDeviceChooser() {
@@ -239,11 +239,11 @@ function createWindow() {
   mainWindowState.manage(mainWindow);
 
   // Open the DevTools.
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.on("ready-to-show", () => {
-      mainWindow.webContents.openDevTools({mode: process.env.DEV_TOOLS_MODE});
-    });
-  }
+  // if (process.env.NODE_ENV === 'development') {
+    // mainWindow.on("ready-to-show", () => {
+      // mainWindow.webContents.openDevTools({mode: process.env.DEV_TOOLS_MODE});
+    // });
+  // }
 };
 
 app.on('before-quit', async () => {

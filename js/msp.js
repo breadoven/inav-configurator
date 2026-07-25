@@ -4,6 +4,7 @@ import MSPCodes from './msp/MSPCodes';
 import mspQueue from './serial_queue';
 import eventFrequencyAnalyzer from './eventFrequencyAnalyzer';
 import timeout from './timeouts';
+import CONFIGURATOR from './data_storage';
 
 /**
  *
@@ -31,7 +32,7 @@ var MSP = {
     SDCARD_STATE_CARD_INIT:     2,
     SDCARD_STATE_FS_INIT:       3,
     SDCARD_STATE_READY:         4,
-        
+
     symbols: {
         BEGIN: '$'.charCodeAt(0),
         PROTO_V1: 'M'.charCodeAt(0),
@@ -392,13 +393,13 @@ var MSP = {
      * awaiting it, so retry briefly before giving up.
      */
     _enqueue(message) {
-        if (mspQueue.put(message)) {
+        if (!CONFIGURATOR.cliActive && mspQueue.put(message)) {
             return;
         }
         if (message.putRetries === undefined) {
             message.putRetries = 25;
         }
-        if (message.putRetries > 0) {
+        if (message.putRetries > 0 && !CONFIGURATOR.cliActive) {
             message.putRetries--;
             setTimeout(() => this._enqueue(message), 150);
         } else if (message.onFinish) {

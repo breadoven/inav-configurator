@@ -92,6 +92,8 @@ cliTab.initialize = function (callback) {
     var self = this;
     self.nextTab = null;
 
+    CONFIGURATOR.cliActive = true;
+
     if (GUI.active_tab !== this) {
         GUI.active_tab = this;
     }
@@ -158,7 +160,7 @@ cliTab.initialize = function (callback) {
 
         $('.cliDocsBtn').attr('href', globalSettings.docsTreeLocation + 'Settings.md');
 
-        CONFIGURATOR.cliActive = true;
+        // CONFIGURATOR.cliActive = true;
 
         var textarea = $('.tab-cli textarea[name="commands"]');
         CliAutoComplete.initialize(textarea, self.sendLine.bind(self), writeToOutput);
@@ -196,7 +198,7 @@ cliTab.initialize = function (callback) {
                     if (err) {
                         GUI.log(i18n.getMessage('ErrorWritingFile'));
                         return console.error(err);
-                    }    
+                    }
                 });
                 GUI.log(i18n.getMessage('FileSaved'));
 
@@ -440,12 +442,16 @@ cliTab.read = function (readInfo) {
         Linux and Unix only understand LF
         Windows understands (both) CRLF
         Chrome OS currently unknown
+        $X&ltl
     */
     var data = new Uint8Array(readInfo.data),
         validateText = "",
         sequenceCharsToSkip = 0;
 
     for (var i = 0; i < data.length; i++) {
+        // if (data[i] == 36) {
+            // break;
+        // }
         const currentChar = String.fromCharCode(data[i]);
 
         if (!CONFIGURATOR.cliValid) {

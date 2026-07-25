@@ -130,7 +130,7 @@ outputsTab.initialize = function (callback) {
         }
 
         let $escProtocol = $('#esc-protocol');
-        
+
         for (let i in escProtocols) {
             if (escProtocols.hasOwnProperty(i)) {
                 var protocolData = escProtocols[i];
@@ -459,10 +459,11 @@ outputsTab.initialize = function (callback) {
             // This is particularly useful for motor balancing as it
             // eliminates the need for external tools
             var sum = 0.0;
-            for (var j = 0; j < accel_data.length; j++)
-                for (var k = 0; k < accel_data[j].length; k++)
+            for (var j = 0; j < accel_data.length; j++) {
+                for (var k = 0; k < accel_data[j].length; k++) {
                     sum += accel_data[j][k][1] * accel_data[j][k][1];
-
+                }
+            }
             let rms = Math.sqrt(sum / (accel_data[0].length + accel_data[1].length + accel_data[2].length));
             $rmsHelper.text(rms.toFixed(4));
 
@@ -683,7 +684,6 @@ outputsTab.initialize = function (callback) {
                 margin_top = block_height - (data * (block_height / 1000)).clamp(0, block_height);
                 height = (data * (block_height / 1000)).clamp(0, block_height);
                 color = parseInt(data * 0.009);
-
                 $('.servo-' + i + ' .label', servos_wrapper).text(FC.SERVO_DATA[i]);
                 $('.servo-' + i + ' .indicator', servos_wrapper).css({ 'margin-top': margin_top + 'px', 'height': height + 'px', 'background-color': '#37a8db' + color + ')' });
             }
