@@ -870,7 +870,7 @@ var FC = {
             'Level',
             'Heading Hold',
             'Velocity Z',
-            'Nav Heading',  // CR164
+            'Nav Heading',
             'Auto Speed'
         ];
     },

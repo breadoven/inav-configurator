@@ -92,6 +92,10 @@ cliTab.initialize = function (callback) {
     var self = this;
     self.nextTab = null;
 
+    // Must be set before mspQueue.flush() below and before the async HTML
+    // import, so periodicStatusUpdater.run() (a 300ms interval kept alive
+    // across tab switches) can never see cliActive === false and queue a
+    // status poll in the gap - the flush only clears what's queued so far.
     CONFIGURATOR.cliActive = true;
 
     if (GUI.active_tab !== this) {
@@ -159,8 +163,6 @@ cliTab.initialize = function (callback) {
        i18n.localize();
 
         $('.cliDocsBtn').attr('href', globalSettings.docsTreeLocation + 'Settings.md');
-
-        // CONFIGURATOR.cliActive = true;
 
         var textarea = $('.tab-cli textarea[name="commands"]');
         CliAutoComplete.initialize(textarea, self.sendLine.bind(self), writeToOutput);
@@ -442,7 +444,6 @@ cliTab.read = function (readInfo) {
         Linux and Unix only understand LF
         Windows understands (both) CRLF
         Chrome OS currently unknown
-        $X&ltl
     */
     var data = new Uint8Array(readInfo.data),
         validateText = "",
@@ -524,12 +525,10 @@ cliTab.read = function (readInfo) {
         }
     }
 
-    // fallback to native autocomplete
-    if (!CliAutoComplete.isEnabled()) {
+    // do not echo the cache builder output into the input textarea
+    if (!CliAutoComplete.isBuilding()) {
         setPrompt(removePromptHash(this.cliBuffer));
     }
-
-    setPrompt(removePromptHash(this.cliBuffer));
 
     if (cliTab.promptCallback && this.cliBuffer.endsWith('# ')) {
         const cb = cliTab.promptCallback;

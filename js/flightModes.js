@@ -301,7 +301,7 @@ var FLIGHT_MODES = [
         boxName: "GIMBAL HEADTRACKER",
         permanentId: 68
     },
-    {  // CR164
+    {
         boxId: 60,
         boxName: "AUTO SPEED",
         permanentId: 69

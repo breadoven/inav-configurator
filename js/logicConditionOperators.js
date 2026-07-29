@@ -322,9 +322,9 @@ const LOGIC_OPERATORS = {
         output: "boolean"
     },
     52: {
-        name: "LED Pin PWM",
+        name: "PWM on pin",
         operandType: "Set Flight Parameter",
-        hasOperand: [true, false],
+        hasOperand: [true, true],
         output: "raw"
     },
     53: {
@@ -345,7 +345,7 @@ const LOGIC_OPERATORS = {
         hasOperand: [true, false],
         output: "boolean"
     },
-    61: {   // CR164
+    61: {
         name: "Disable Auto Speed Airspeed",
         operandType: "Set Flight Parameter",
         hasOperand: [true, false],

@@ -123,8 +123,6 @@ $(function() {
             }
 
             if ($(this).parent().hasClass('active') == false && !GUI.tab_switch_in_progress) { // only initialize when the tab isn't already active
-
-                // if (CONFIGURATOR.cliActive) {
                 if (CONFIGURATOR.cliActive && CONFIGURATOR.cliValid) {
                     cliTab.exit($(this).parent());
                     return;

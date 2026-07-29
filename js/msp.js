@@ -393,6 +393,13 @@ var MSP = {
      * awaiting it, so retry briefly before giving up.
      */
     _enqueue(message) {
+        // CONFIGURATOR.cliActive can flip true between retries (each one is a
+        // separate setTimeout, well after the original send_message() call).
+        // Check it before every attempt, including the first: a successful
+        // mspQueue.put() here would land the message in the FC's raw CLI
+        // stream instead of being MSP-parsed, regardless of which attempt
+        // this is. Give up rather than retry once that's happened - same as
+        // exhausting putRetries.
         if (!CONFIGURATOR.cliActive && mspQueue.put(message)) {
             return;
         }
