@@ -1630,23 +1630,6 @@ OSD.constants = {
                         }
                     }
                 },
-                {   // CR164
-                    name: 'AUTO SPEED',
-                    id: 170,
-                    preview: function(osd_data) {
-                        // 3 chars
-                        switch (OSD.data.preferences.units) {
-                            case 0: // Imperial
-                            case 2: // Metric + MPH
-                            case 3: // UK
-                                return FONT.embed_dot('G:127') + FONT.symbol(SYM.MPH_3D);
-                            case 4: // GA
-                                return FONT.embed_dot('G:110') + FONT.symbol(SYM.KT_3D);
-                            default: // Metric
-                                return FONT.embed_dot('G:204') + FONT.symbol(SYM.KMH_3D);
-                        }
-                    }
-                },  // CR164
                 {
                     name: 'AUTO SPEED',
                     id: 170,
